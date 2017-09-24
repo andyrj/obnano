@@ -87,19 +87,21 @@ function instructionOrder(a, b) {
 
 function reconcile(element, instructions, oldChildren) {
   const sortedInstructions = instructions.sort(instructionOrder);
-  let at = 0;
-  let o = 0;
-  let n = 0;
+  //let at = 0;
+  //let o = 0;
+  //let n = 0;
   while (sortedInstructions.length > 0) {
     const instruction = sortedInstructions.shift();
-    const curr = element.children[at];
+    /*
     if (instruction.type === "remove") {
       element.removeChild(curr);
       o++;
-    } else if (instruction.type === "add") {
-      element.insertBefore(createElement(instruction.nNode.node), curr);
-      n++;
-    } else if (instruction.type === "diff") {
+    } else*/ 
+    if (instruction.type === "add") {
+      const curr = element.children[instruction.nNode.index];
+      element.insertAfter(createElement(instruction.nNode.node), curr);
+      //n++;
+    } /*else if (instruction.type === "diff") {
       const oldNode = instruction.oNode;
       const node = instruction.nNode;
       patch(element, curr, oldNode, node);
@@ -109,6 +111,7 @@ function reconcile(element, instructions, oldChildren) {
       // swap case is most complicated...
       // make test for swaps...
     }
+    */
   }
 }
 
@@ -134,10 +137,21 @@ function unkeyed(parent, oldNodes, nodes) {
 function keyed(parent, oldNodes, nodes) {
   const instructions = []; // { type: "add" | "remove" | "diff" | "swap", oNode?: { index, node }, nNode?: { index, node} }
   const nodeMap = {}; // { [id]: {oNode: {index, node}, nNode: {index, node} } }
+  
   oldNodes.forEach((child, index) => {
-    const id = child.props.id;
-    nodeMap[id] = { oNode: { index, node: child } };
+    const key = child.props.key;
+    nodeMap[key] = { oNode: { index, node: child } };
   });
+
+  nodes.forEach((child, index) => {
+    const key = child.props.key;
+    if (nodeMap[key] === undefined) {
+      instructions.unshift({ type: "add", nNode: { index, child } });
+    }
+  });
+  // refactor this code...  can't do with forEach need loop with 2 counters... 
+  /*
+  
   nodes.forEach((child, index) => {
     const id = child.props.id;
     if (nodeMap[id] !== undefined) {
@@ -156,9 +170,11 @@ function keyed(parent, oldNodes, nodes) {
   Object.keys(nodeMap).forEach(nodeEntry => {
     if (nodeEntry.nNode === undefined) {
       const oNode = nodeEntry.oNode;
-      instructions.push({ type: "remove", oNode });
+      instructions.unshift({ type: "remove", oNode });
     }
   });
+  */
+  console.log(JSON.stringify(instructions));
   reconcile(parent, instructions, oldNodes);
 }
 
