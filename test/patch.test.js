@@ -99,6 +99,12 @@ test("patch should remove child nodes", t => {
   t.is(document.body.childNodes[0].childNodes.length, 0);
 });
 
+test("should not ouptut key attribute", t => {
+  const node = h("div", { key: 1 }, []);
+  patch(document.body, null, null, node);
+  t.is(document.body.childNodes[0].attributes.length, 0);
+});
+
 test("patch should update un-keyed child nodes", t => {
   const str = "test";
   const children = h("div", { id: "test" }, [str]);
@@ -115,6 +121,31 @@ test("patch should update un-keyed child nodes", t => {
   t.is(document.body.firstChild.lastChild.firstChild.nodeValue, str);
   patch(document.body, document.body.childNodes[0], children1, children);
   t.is(document.body.childNodes[0].childNodes[0].nodeValue, str);
+});
+
+test("null keys should still be handled as un-keyed", t => {
+  const str = "test";
+  const children = h("div", { id: "test" }, [str]);
+  patch(document.body, null, null, children);
+  t.is(document.body.childNodes[0].childNodes[0].nodeValue, str);
+  const children1 = h("div", { id: "test" }, [
+    h("div", { key: null }, [str]),
+    h("h1", { key: null }, [str])
+  ]);
+  patch(document.body, document.body.childNodes[0], children, children1);
+  t.is(document.body.firstChild.firstChild.nodeName, "DIV");
+  t.is(document.body.firstChild.firstChild.firstChild.nodeValue, str);
+  t.is(document.body.firstChild.lastChild.nodeName, "H1");
+  t.is(document.body.firstChild.lastChild.firstChild.nodeValue, str);
+  const children2 = h("div", { id: "test" }, [
+    h("h1", { key: null }, [str]),
+    h("div", { key: null }, [str])
+  ]);
+  patch(document.body, document.body.childNodes[0], children1, children2);
+  t.is(document.body.firstChild.firstChild.nodeName, "H1");
+  t.is(document.body.firstChild.firstChild.firstChild.nodeValue, str);
+  t.is(document.body.firstChild.lastChild.nodeName, "DIV");
+  t.is(document.body.firstChild.lastChild.firstChild.nodeValue, str);
 });
 
 test("should add and remove from keyed children", t => {

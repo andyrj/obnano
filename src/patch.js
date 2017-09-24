@@ -1,32 +1,24 @@
 // from hyperapp patch...
 //const globalInvokeLaterStack = [];
 
-function diffAttributes(element, oldNode, node) {
-  // TODO: refactor this method...
-  const oldProps = oldNode.props;
-  const newProps = node.props;
-  const oldPropKeys = Object.keys(oldNode.props).filter(name => name !== "key");
-  const newPropKeys = Object.keys(node.props).filter(name => name !== "key");
-  const oldPropLen = oldPropKeys.length;
-  const newPropLen = newPropKeys.length;
-  const maxLen = Math.max(oldPropLen, newPropLen);
-  for (let i = 0; i < maxLen; i++) {
-    const oldKey = oldPropKeys[i];
-    const newKey = newPropKeys[i];
-    if (oldKey != null && newKey != null) {
-      // diff the values
-      if (oldProps[oldKey] === newProps[newKey]) {
-        continue;
-      } else {
-        setData(element, newKey, newProps[newKey]);
+function diffAttributes(element, oldProps, newProps) {
+  const oldPropKeys = Object.keys(oldProps).filter(name => name !== "key");
+  const newPropKeys = Object.keys(newProps).filter(name => name !== "key");
+  if (newPropKeys.length === 0) {
+    oldPropKeys.forEach(key => {
+      setData(element, key);
+    });
+  } else {
+    // remove props in old not found in new
+    oldPropKeys.forEach(key => {
+      if (newPropKeys.indexOf(key) === -1) {
+        setData(element, key);
       }
-    } else if (oldKey == null) {
-      // add attribute to element
-      setData(element, newKey, newProps[newKey]);
-    } else if (newKey == null) {
-      // remove attribute from element
-      setData(element, oldKey);
-    }
+    });
+    // add/update new props
+    newPropKeys.forEach(key => {
+      setData(element, key, newProps[key]);
+    });
   }
 }
 
@@ -182,7 +174,12 @@ function diffChildren(parent, oldNodes, nodes) {
       parent.removeChild(parent.lastChild);
     }
   } else {
-    if (oldNodes[0].props.key != null && nodes[0].props.key != null) {
+    if (
+      oldNodes[0].props &&
+      nodes[0].props &&
+      oldNodes[0].props.key != null &&
+      nodes[0].props.key != null
+    ) {
       keyed(parent, oldNodes, nodes);
     } else {
       unkeyed(parent, oldNodes, nodes);
@@ -194,14 +191,14 @@ export function patch(parent, element, oldNode, node) {
   if (oldNode == null && node != null) {
     // create new element and add to parent...
     element = parent.insertBefore(createElement(node), element);
-  } else if (oldNode != null && node != null) {
+  } else if (element != null && oldNode != null && node != null) {
     if (oldNode === node) {
       return element; // short circuit for memoized vnode
     } else if (typeof oldNode === "string" && typeof node === "string") {
       element.nodeValue = node; // short cut for upating textNode
     } else if (oldNode.tag && node.tag && oldNode.tag === node.tag) {
       // diff attributes
-      diffAttributes(element, oldNode, node);
+      diffAttributes(element, oldNode.props, node.props);
       // diff children if either oldNode or node have children
       if (oldNode.children.length > 0 || node.children.length > 0) {
         diffChildren(element, oldNode.children, node.children);
@@ -210,7 +207,7 @@ export function patch(parent, element, oldNode, node) {
       // replace oldNode with node in dom...
       parent.replaceChild(createElement(node), element);
     }
-  } else if (oldNode != null && node == null) {
+  } else if (element != null && oldNode != null && node == null) {
     /* lifecycle onremove from hyperapp
     if (oldNode.props && oldNode.props.onremove) {
       globalInvokeLaterStack.push(oldNode.props.onremove(element));
