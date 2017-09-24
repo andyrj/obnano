@@ -2,10 +2,11 @@
 //const globalInvokeLaterStack = [];
 
 function diffAttributes(element, oldNode, node) {
+  // TODO: refactor this method...
   const oldProps = oldNode.props;
   const newProps = node.props;
-  const oldPropKeys = Object.keys(oldNode.props).sort();
-  const newPropKeys = Object.keys(node.props).sort();
+  const oldPropKeys = Object.keys(oldNode.props).filter(name => name !== "key");
+  const newPropKeys = Object.keys(node.props).filter(name => name !== "key");
   const oldPropLen = oldPropKeys.length;
   const newPropLen = newPropKeys.length;
   const maxLen = Math.max(oldPropLen, newPropLen);
@@ -33,7 +34,6 @@ function setData(element, key, value) {
   // ignoring keyed nodes for this draft...
   // not supporting inline styles in this draft...
   if (key === "key") {
-    element.id = value;
     return; // short circuit keyed node case...
   }
   try {
@@ -182,7 +182,7 @@ function diffChildren(parent, oldNodes, nodes) {
       parent.removeChild(parent.lastChild);
     }
   } else {
-    if (parent.firstChild.id != null) {
+    if (oldNodes[0].props.key != null && nodes[0].props.key != null) {
       keyed(parent, oldNodes, nodes);
     } else {
       unkeyed(parent, oldNodes, nodes);
