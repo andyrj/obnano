@@ -120,6 +120,56 @@ function reconcile(element, instructions, oldChildren) {
   }
 }
 
+function unkeyed(parent, oldNodes, nodes) {
+  let i = 0;
+  while (i < oldNodes.length && i < nodes.length) {
+    patch(parent, parent.childNodes[i], oldNodes[i], nodes[i]);
+    i++;
+  }
+  if (i === oldNodes.length) {
+    while (i < nodes.length) {
+      parent.appendChild(createElement(nodes[i]));
+      i++;
+    }
+  } else if (i === nodes.length) {
+    while (i < oldNodes.length) {
+      parent.removeChild(parent.childNodes[i]);
+      i++;
+    }
+  }
+}
+
+function keyed(parent, oldNodes, nodes) {
+  const instructions = []; // { type: "add" | "remove" | "diff" | "swap", oNode?: { index, node }, nNode?: { index, node} }
+  const nodeMap = {}; // { [id]: {oNode: {index, node}, nNode: {index, node} } }
+  oldNodes.forEach((child, index) => {
+    const id = child.props.id;
+    nodeMap[id] = { oNode: { index, node: child } };
+  });
+  nodes.forEach((child, index) => {
+    const id = child.props.id;
+    if (nodeMap[id] !== undefined) {
+      const nNode = { index, node: child };
+      const oNode = nodeMap[id].oNode;
+      nodeMap[id].nNode = nNode;
+      if (nodeMap[id].oNode.index === index) {
+        instructions.push({ type: "diff", nNode, oNode });
+      } else {
+        instructions.push({ type: "swap", nNode, oNode });
+      }
+    } else {
+      instructions.push({ type: "add", new: { index, child } });
+    }
+  });
+  Object.keys(nodeMap).forEach(nodeEntry => {
+    if (nodeEntry.nNode === undefined) {
+      const oNode = nodeEntry.oNode;
+      instructions.push({ type: "remove", oNode });
+    }
+  });
+  reconcile(parent, instructions, oldNodes);
+}
+
 function diffChildren(parent, oldNodes, nodes) {
   if (oldNodes.length === 0 && nodes.length > 0) {
     // short circuit for no children -> children
@@ -133,44 +183,9 @@ function diffChildren(parent, oldNodes, nodes) {
     }
   } else {
     if (parent.firstChild.id != null) {
-      //const oldLen = oldNode.children.length;
-      //const newLen = node.children.length;
-      const instructions = []; // { type: "add" | "remove" | "diff" | "swap", oNode?: { index, node }, nNode?: { index, node} }
-      const nodeMap = {}; // { [id]: {oNode: {index, node}, nNode: {index, node} } }
-      oldNodes.forEach((child, index) => {
-        const id = child.props.id;
-        nodeMap[id] = { oNode: { index, node: child } };
-      });
-      nodes.forEach((child, index) => {
-        const id = child.props.id;
-        if (nodeMap[id] !== undefined) {
-          const nNode = { index, node: child };
-          const oNode = nodeMap[id].oNode;
-          nodeMap[id].nNode = nNode;
-          if (nodeMap[id].oNode.index === index) {
-            instructions.push({ type: "diff", nNode, oNode });
-          } else {
-            instructions.push({ type: "swap", nNode, oNode });
-          }
-        } else {
-          instructions.push({ type: "add", new: { index, child } });
-        }
-      });
-      Object.keys(nodeMap).forEach(nodeEntry => {
-        if (nodeEntry.nNode === undefined) {
-          const oNode = nodeEntry.oNode;
-          instructions.push({ type: "remove", oNode });
-        }
-      });
-      reconcile(parent, instructions, oldNodes);
+      keyed(parent, oldNodes, nodes);
     } else {
-      // un-keyed children...
-      /* this only works if first list is longest...
-      parent.childNodes.forEach((child, index) => {
-        patch(parent, child, oldNodes[index], nodes[index]);
-      });
-      */
-      // TODO: rewrite the above to properly patch...
+      unkeyed(parent, oldNodes, nodes);
     }
   }
 }
