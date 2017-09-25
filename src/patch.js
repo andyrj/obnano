@@ -85,35 +85,51 @@ function instructionOrder(a, b) {
   }
 }
 
-function reconcile(element, instructions, oldChildren) {
+/* eslint-disable */
+function reconcile(parent, instructions, oldChildren) {
   const sortedInstructions = instructions.sort(instructionOrder);
-  //let at = 0;
-  //let o = 0;
-  //let n = 0;
+  console.log(JSON.stringify(sortedInstructions));
+  let at = 0;
   while (sortedInstructions.length > 0) {
-    const instruction = sortedInstructions.shift();
-    /*
+    const instruction = sortedInstructions[0];
+    
     if (instruction.type === "remove") {
+      if (instruction.oNode.index > at) {
+        at = instruction.oNode.index;
+      }
+      const curr = parent.children[at];
       element.removeChild(curr);
-      o++;
-    } else*/ 
-    if (instruction.type === "add") {
-      const curr = element.children[instruction.nNode.index];
-      element.insertAfter(createElement(instruction.nNode.node), curr);
-      //n++;
-    } /*else if (instruction.type === "diff") {
+    } else if (instruction.type === "add") {
+      if (instruction.nNode.index - instruction.delta > at) {
+        at = instruction.nNode.index - instruction.delta;
+      }
+      console.log(at, parent.childNodes.length);
+      if (parent.childNodes.length === at) {
+        parent.appendChild(createElement(instruction.nNode.child));
+      } else {
+        const curr = parent.children[at - 1];
+        parent.insertBefore(createElement(instruction.nNode.child), curr);
+      }
+      at++;
+    } else if (instruction.type === "diff") {
+      if (instruction.oNode.index > at) {
+        at = instruction.oNode.index;
+      }
+      const curr = parent.children[at];
       const oldNode = instruction.oNode;
       const node = instruction.nNode;
-      patch(element, curr, oldNode, node);
-      o++;
-      n++;
+      patch(parent, curr, oldNode, node);
+      at++;
     } else {
       // swap case is most complicated...
       // make test for swaps...
+      at++;
     }
-    */
+    sortedInstructions.shift();
   }
+  return parent;
 }
+/* eslint-enable */
 
 function unkeyed(parent, oldNodes, nodes) {
   let i = 0;
@@ -137,16 +153,48 @@ function unkeyed(parent, oldNodes, nodes) {
 function keyed(parent, oldNodes, nodes) {
   const instructions = []; // { type: "add" | "remove" | "diff" | "swap", oNode?: { index, node }, nNode?: { index, node} }
   const nodeMap = {}; // { [id]: {oNode: {index, node}, nNode: {index, node} } }
-  
+
   oldNodes.forEach((child, index) => {
     const key = child.props.key;
-    nodeMap[key] = { oNode: { index, node: child } };
+    nodeMap[key] = { oNode: { index, child } };
   });
 
+  let delta = 0;
   nodes.forEach((child, index) => {
     const key = child.props.key;
     if (nodeMap[key] === undefined) {
-      instructions.unshift({ type: "add", nNode: { index, child } });
+      instructions.unshift({ type: "add", nNode: { index, child }, delta });
+      delta++;
+    } else {
+      if (nodeMap[key].oNode.index - delta === index) {
+        nodeMap[key].nNode = { index, child };
+        instructions.unshift({
+          type: "diff",
+          nNode: child,
+          oNode: nodeMap[key].oNode,
+          delta
+        });
+      } else {
+        console.log(nodeMap[key].oNode.index, delta, index);
+        nodeMap[key].nNode = { index, child };
+        instructions.unshift({
+          type: "swap",
+          nNode: child,
+          oNode: nodeMap[key].oNode,
+          delta
+        });
+      }
+    }
+  });
+
+  Object.keys(nodeMap).forEach(key => {
+    delta--;
+    if (nodeMap[key].nNode === undefined) {
+      instructions.unshift({
+        type: "remove",
+        oNode: nodeMap[key].oNode,
+        delta
+      });
     }
   });
   // refactor this code...  can't do with forEach need loop with 2 counters... 
@@ -174,7 +222,7 @@ function keyed(parent, oldNodes, nodes) {
     }
   });
   */
-  console.log(JSON.stringify(instructions));
+  
   reconcile(parent, instructions, oldNodes);
 }
 
