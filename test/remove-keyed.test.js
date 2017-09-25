@@ -8,7 +8,6 @@ test.beforeEach(() => {
   document.body = document.createElement("body");
 });
 
-/*
 test("keyed nodes should remove properly", t => {
   const c1 = [
     h("div", {key: 0}, ["0"]),
@@ -57,4 +56,3 @@ test("keyed nodes should remove properly", t => {
   t.is(children[0].firstChild.nodeValue, "1");
   t.is(children[1].firstChild.nodeValue, "3");
 });
-*/

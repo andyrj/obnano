@@ -8,7 +8,6 @@ test.beforeEach(() => {
   document.body = document.createElement("body");
 });
 
-/*
 test("should add to keyed children", t => {
   const c1 = [
     h("div", {key: 0}, ["0"]),
@@ -72,4 +71,3 @@ test("should add to keyed children", t => {
   t.is(children[4].firstChild.nodeValue, "2");
   t.is(children[5].firstChild.nodeValue, "3");
 });
-*/

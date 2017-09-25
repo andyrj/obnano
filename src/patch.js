@@ -146,8 +146,8 @@ function keyed(parent, oldNodes, nodes) {
       cOldNodes.splice(at + delta, 1);
       delta--;
     } else {
-      parent.insertBefore(createElement(instruction.child), parent.childNodes[at + delta]);
-      cOldNodes.splice(at + delta, 0, instruction.child);
+      parent.insertBefore(createElement(instruction.child), parent.childNodes[at/* + delta*/]);
+      cOldNodes.splice(at/* + delta*/, 0, instruction.child);
       delta++;
     }
     i++;
