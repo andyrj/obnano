@@ -84,17 +84,22 @@ function unkeyed(parent, oldNodes, nodes) {
   }
 }
 
-function indexedComparator(a, b) {
+// comparator with no ties...  win goes to type === "remove"
+function instructionComparator(a, b) {
   if (a.index < b.index) {
     return -1;
   } else if (a.index > b.index) {
     return 1;
   } else {
-    return 0;
+    if (a.type === "remove") {
+      return -1;
+    } else {
+      return 1;
+    }
   }
 }
 
-function swapAndDiffKeyed(parent, oldNodes, nodes) {
+function swapAndDiffKeyed(parent, keys, oldNodes, nodes) {
   // now we do comparison just for swap and diff....
 }
 
@@ -102,8 +107,9 @@ function swapAndDiffKeyed(parent, oldNodes, nodes) {
 function keyed(parent, oldNodes, nodes) {
   const nodeMap = {};
   const diffSwapKeys = [];
-  const removeNodes = [];
-  const addNodes = [];
+  //const removeNodes = [];
+  //const addNodes = [];
+  const instructions = [];
 
   oldNodes.forEach((child, index) => {
     const key = child.props.key;
@@ -115,55 +121,42 @@ function keyed(parent, oldNodes, nodes) {
       nodeMap[key].nNode = { index, child };
       diffSwapKeys.push(key);
     } else {
-      addNodes.push({ index, child });
+      instructions.push({type: "add", index, child });
     }
   });
   Object.keys(nodeMap).forEach(key => {
     const entry = nodeMap[key];
     if (entry.nNode === undefined) {
-      removeNodes.push(entry.oNode);
+      instructions.push({type: "remove", index: entry.oNode.index, child: entry.oNode.child });
     }
   });
 
   const cOldNodes = oldNodes.slice(0);
-  const sortedRN = removeNodes.sort(indexedComparator);
-  const sortedRNLen = sortedRN.length;
-  let i = 0;
-  let at = 0;
-  let delta = 0;
-  while (i < sortedRNLen) {
-    const toRemove = sortedRN[i];
-    i++;
-    if (toRemove.index > at) {
-      at = toRemove.index;
+  const sortedInstructions = instructions.sort(instructionComparator);
+  const instructionLen = sortedInstructions.length;
+  console.log(JSON.stringify(sortedInstructions));
+  let i = 0; // index of remove instruction
+  let at;
+  let delta = 0; // current delta offset...
+  while (i < instructionLen) {
+    const instruction = sortedInstructions[i];
+    at = instruction.index;
+    if (instruction.type === "remove") {
+      parent.removeChild(parent.childNodes[at + delta]);
+      cOldNodes.splice(at + delta, 1);
+      delta--;
+    } else {
+      parent.insertBefore(createElement(instruction.child), parent.childNodes[at + delta]);
+      cOldNodes.splice(at + delta, 0, instruction.child);
+      delta++;
     }
-    parent.removeChild(parent.childNodes[at + delta]);
-    cOldNodes.splice(at + delta, 1);
-    delta--;
+    i++;
   }
   
-  console.log(JSON.stringify(cOldNodes));
-  console.log(JSON.stringify(nodes));
-
-  // now we have a list with all necessary removals handled...
-  const sortedAN = addNodes.sort(indexedComparator);
-  const sortedANLen = sortedAN.length;
-  i = 0;
-  at = 0;
-  delta = 0;
-  while (i < sortedANLen) {
-    const toAdd = sortedAN[i];
-    i++;
-    if (toAdd.index > at) {
-      at = toAdd.index;
-    }
-    parent.insertBefore(createElement(toAdd.child), parent.childNodes[at + delta]);
-    cOldNodes.splice(at + delta, 0, toAdd.child);
-    delta++;
-  }
-  
+  //console.log(JSON.stringify(cOldNodes));
+  //console.log(JSON.stringify(nodes));
   // now we should have new nodes list without swap/diff operations...
-  //swapAndDiffKeyed(parent, cOldNodes, nodes);
+  //swapAndDiffKeyed(parent, diffAndSwapKeys, cOldNodes, nodes);
 }
 /* eslint-enable */
 
