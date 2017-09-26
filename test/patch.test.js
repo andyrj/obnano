@@ -70,12 +70,18 @@ test("patch should update domNodes", t => {
   t.is(attrs.length, 1);
   const node2 = h("div", { id: "test1", value: "foo" }, []);
   patch(document.body, document.body.childNodes[0], node1, node2);
-  n - document.body.childNodes[0];
+  n = document.body.childNodes[0];
   attrs = n.attributes;
   t.is(n.nodeName, "DIV");
   t.is(attrs.filter(attr => attr.name === "id")[0].value, "test1");
   t.is(attrs.filter(attr => attr.name === "value")[0].value, "foo");
   t.is(attrs.length, 2);
+  const node3 = h("div", {}, []);
+  patch(document.body, document.body.childNodes[0], node2, node3);
+  n = document.body.childNodes[0];
+  attrs = n.attributes;
+  t.is(n.nodeName, "DIV");
+  t.is(attrs.length, 0);
 });
 
 test("patch should add child nodes", t => {
@@ -147,34 +153,3 @@ test("null keys should still be handled as un-keyed", t => {
   t.is(document.body.firstChild.lastChild.nodeName, "DIV");
   t.is(document.body.firstChild.lastChild.firstChild.nodeValue, str);
 });
-
-/*
-test("keyed nodes should diff correctly", t => {
-  const c1 = [
-    h("div", {key: 0}, ["0"]),
-    h("div", {key: 1}, ["1"]),
-    h("div", {key: 2}, ["2"]),
-    h("div", {key: 3}, ["3"]),
-    h("div", {key: 4}, ["4"])
-  ];
-  const node1 = h("div", {}, c1);
-  patch(document.body, null, null, node1);
-  t.is(document.body.firstChild.childNodes.length, 5);
-  const c2 = [
-    h("div", {key: 0}, ["4"]),
-    h("div", {key: 1}, ["3"]),
-    h("div", {key: 2}, ["2"]),
-    h("div", {key: 3}, ["1"]),
-    h("div", {key: 4}, ["0"])
-  ];
-  const node2 = h("div", {}, c2);
-  patch(document.body, document.body.firstChild, node1, node2);
-  t.is(document.body.firstChild.childNodes.length, 5);
-  let children = document.body.firstChild.childNodes;
-  t.is(children[0].firstChild.nodeValue, "4");
-  t.is(children[1].firstChild.nodeValue, "3");
-  t.is(children[2].firstChild.nodeValue, "2");
-  t.is(children[3].firstChild.nodeValue, "1");
-  t.is(children[4].firstChild.nodeValue, "0");
-});
-*/
