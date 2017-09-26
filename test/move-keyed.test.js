@@ -8,7 +8,6 @@ test.beforeEach(() => {
   document.body = document.createElement("body");
 });
 
-/*
 test("should properly move keyed nodes", t => {
   const c1 = [
     h("div", {key: 0}, ["0"]),
@@ -62,4 +61,3 @@ test("should properly move keyed nodes", t => {
   t.is(children[3].firstChild.nodeValue, "3");
   t.is(children[4].firstChild.nodeValue, "1");
 });
-*/
