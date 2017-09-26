@@ -89,6 +89,7 @@ function keyed(parent, oldNodes, nodes) {
   const removeNodes = [];
   const addNodes = [];
 
+  /*
   oldNodes.forEach((child, index) => {
     const key = child.props.key;
     nodeMap[key] = { oNode: { index, child }, nNode: undefined };
@@ -129,56 +130,62 @@ function keyed(parent, oldNodes, nodes) {
       i++;
       j++;  
     } else if (moveDiffKeys.indexOf(nodes[j].props.key) > -1) {
-      /*
       if (cOldNodes[i].props.key !== nodes[j].props.key) {
-        // peek at next cOldNode if that is right key move cOldNode[i] to position found in nodes
-        let moveKey;
         if (cOldNodes[i + 1].props.key === nodes[j].props.key) {
-          moveKey = cOldNodes[i].props.key;
-          let x = j;
-          for (; x < nodes.length; x++) {
-            if (nodes[x].props.key === moveKey) {
-              break;
-            }
-          }
-          const cMoveNode = cOldNodes[j];
-          if (x === cOldNodes.length) {
-            cOldNodes.splice(i,1);
-            cOldNodes.push(cMoveNode);
-            const dMoveNode = parent.removeChild(parent.childNodes[i]);
-            parent.appendChild(dMoveNode);
-          } else {
-            cOldNodes.splice(i, 1);
-            cOldNodes.splice(x, 0, cMoveNode);
-            const dMoveNode = parent.removeChild(parent.childNodes[i]);
-            parent.insertBefore(dMoveNode, parent.childNodes[x]);
-          }
-        } else {
-          // move node
-          moveKey = nodes[j].props.key;
-          // find old position
-          let x = i;
-          for(; x < cOldNodes.length; x++) {
-            if (cOldNodes[x].props.key === moveKey) {
-              break;
-            }
-          }
-          // move node at x, to j on cOldNodes and dom
-          if (j === nodes.length) {
-            const cMoveNode = cOldNodes[x];
-            cOldNodes.splice(x, 1);
-            cOldNodes.push(cMoveNOde);
-            const dMoveNode = parent.removeChild(parent.childNodes[x]);
-            parent.appendChild(dMoveNode);
-          } else {
-            const cMoveNode = cOldNodes[x];
-            cOldNodes.splice(x, 1);
-            cOldNodes.splice(j, 0, cMoveNode);
-            const dMoveNode = parent.removeChild(parent.childNodes[x]);
-            parent.insertBefore(dMoveNode, parent.childNodes[j]);
-          }
+          // move cOldNodes[i] -> where key is at in nodes
+        } else if (nodes[j + 1].props.key === cOldNodes[i].props.key) {
+          // move 
         }
-      }*/
+      }
+      // if (cOldNodes[i].props.key !== nodes[j].props.key) {
+      //   // peek at next cOldNode if that is right key move cOldNode[i] to position found in nodes
+      //   let moveKey;
+      //   if (cOldNodes[i + 1].props.key === nodes[j].props.key) {
+      //     moveKey = cOldNodes[i].props.key;
+      //     let x = j;
+      //     for (; x < nodes.length; x++) {
+      //       if (nodes[x].props.key === moveKey) {
+      //         break;
+      //       }
+      //     }
+      //     const cMoveNode = cOldNodes[j];
+      //     if (x === cOldNodes.length) {
+      //       cOldNodes.splice(i,1);
+      //       cOldNodes.push(cMoveNode);
+      //       const dMoveNode = parent.removeChild(parent.childNodes[i]);
+      //       parent.appendChild(dMoveNode);
+      //     } else {
+      //       cOldNodes.splice(i, 1);
+      //       cOldNodes.splice(x, 0, cMoveNode);
+      //       const dMoveNode = parent.removeChild(parent.childNodes[i]);
+      //       parent.insertBefore(dMoveNode, parent.childNodes[x]);
+      //     }
+      //   } else {
+      //     // move node
+      //     moveKey = nodes[j].props.key;
+      //     // find old position
+      //     let x = i;
+      //     for(; x < cOldNodes.length; x++) {
+      //       if (cOldNodes[x].props.key === moveKey) {
+      //         break;
+      //       }
+      //     }
+      //     // move node at x, to j on cOldNodes and dom
+      //     if (j === nodes.length) {
+      //       const cMoveNode = cOldNodes[x];
+      //       cOldNodes.splice(x, 1);
+      //       cOldNodes.push(cMoveNOde);
+      //       const dMoveNode = parent.removeChild(parent.childNodes[x]);
+      //       parent.appendChild(dMoveNode);
+      //     } else {
+      //       const cMoveNode = cOldNodes[x];
+      //       cOldNodes.splice(x, 1);
+      //       cOldNodes.splice(j, 0, cMoveNode);
+      //       const dMoveNode = parent.removeChild(parent.childNodes[x]);
+      //       parent.insertBefore(dMoveNode, parent.childNodes[j]);
+      //     }
+      //   }
+      // }
       // run normal patch on node...
       patch(parent, parent.childNodes[j], cOldNodes[i], nodes[j]);
       i++;
@@ -192,6 +199,7 @@ function keyed(parent, oldNodes, nodes) {
     }
     j++;
   }
+  */
 }
 /* eslint-enable */
 
