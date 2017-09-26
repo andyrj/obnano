@@ -112,7 +112,7 @@ function diffAndMove(parent, oldNodes, nodes, addedKeys) {
   });
 }
 */
-
+/* eslint-disable */
 function keyed(parent, oldNodes, nodes) {
   const nodeMap = {};
   const cOldNodes = oldNodes.slice(0);
@@ -127,11 +127,36 @@ function keyed(parent, oldNodes, nodes) {
       nodeMap[key].oNode = { index, child };
     } else {
       // remove node from dom and cOldNodes
-      cOldNodes.splice(index + delta, 0, child);
+      cOldNodes.splice(index + delta, 1);
       parent.removeChild(parent.childNodes[index + delta]);
       delta--;
     }
   });
+
+  let nodesLen = nodes.length;
+  let i = 0;
+  for (; i < nodesLen; i++) {
+    const node = nodes[i];
+    const key = nodes[i].props.key;
+    if (nodeMap[key].oNode === undefined) {
+      // add node
+      if (i === cOldNodes.length) {
+        cOldNodes.push(node);
+        parent.appendChild(createElement(node));
+      } else {
+        cOldNodes.splice(i, 0, node);
+        parent.insertBefore(createElement(node), parent.childNodes[i]);
+      }
+    } else {
+      const oNode = nodeMap[key].oNode;
+      // move and diff case...
+      if (oNode.index !== i) {
+        // move needs to happen here..
+      }
+      // diff in place now that move is handled for this index
+      patch(parent, parent.childNodes[i], oNode.child, node);
+    }
+  }
 
   /*
   const c1OldNodes = cOldNodes.slice(0);
@@ -151,6 +176,7 @@ function keyed(parent, oldNodes, nodes) {
   */
   //diffAndMove(parent, c1OldNodes, nodes, addedKeys);
 }
+/* eslint-enable */
 
 function diffChildren(parent, oldNodes, nodes) {
   if (oldNodes.length === 0 && nodes.length > 0) {

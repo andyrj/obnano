@@ -8,7 +8,6 @@ test.beforeEach(() => {
   document.body = document.createElement("body");
 });
 
-/*
 test("add and remove to keyed children", t => {
   const c1 = [
     h("div", {key: 0}, ["0"]),
@@ -62,4 +61,3 @@ test("add and remove to keyed children", t => {
   t.is(children[1].firstChild.nodeValue, "1");
   t.is(children[2].firstChild.nodeValue, "2");
 });
-*/
