@@ -116,28 +116,24 @@ function diffAndMove(parent, oldNodes, nodes, addedKeys) {
 function keyed(parent, oldNodes, nodes) {
   const nodeMap = {};
   const cOldNodes = oldNodes.slice(0);
-  const addedKeys = [];
-  oldNodes.forEach((child, index) => {
-    const key = child.props.key;
-    nodeMap[key] = { oNode: { index, child } };
-  });
   nodes.forEach((child, index) => {
     const key = child.props.key;
+    nodeMap[key] = { nNode: { index, child } };
+  });
+  let delta = 0;
+  oldNodes.forEach((child, index) => {
+    const key = child.props.key;
     if (nodeMap[key] !== undefined) {
-      nodeMap[key].nNode = { index, child };
+      nodeMap[key].oNode = { index, child };
     } else {
-      addedKeys.push(child.props.key);
-      // add node from dom
-      if (index < cOldNodes.length) {
-        cOldNodes.splice(index, 0, child);
-        parent.insertBefore(createElement(child), parent.childNodes[index]);
-      } else {
-        cOldNodes.push(child);
-        parent.appendChild(createElement(child));
-      }
+      // remove node from dom and cOldNodes
+      cOldNodes.splice(index + delta, 0, child);
+      parent.removeChild(parent.childNodes[index + delta]);
+      delta--;
     }
   });
 
+  /*
   const c1OldNodes = cOldNodes.slice(0);
   let delta = 0;
   cOldNodes.forEach((node, index) => {
@@ -152,6 +148,7 @@ function keyed(parent, oldNodes, nodes) {
       delta--;
     }
   });
+  */
   //diffAndMove(parent, c1OldNodes, nodes, addedKeys);
 }
 
