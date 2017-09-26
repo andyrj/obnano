@@ -82,36 +82,6 @@ function unkeyed(parent, oldNodes, nodes) {
   }
 }
 
-/* can't do this and gain any perf...
-function diffAndMove(parent, oldNodes, nodes, addedKeys) {
-  const nodeMap = {};
-  oldNodes.forEach((child, index) => {
-    const key = child.props.key;
-    nodeMap[key] = { oNode: { index, child } };
-  });
-  nodes.forEach((child, index) => {
-    const key = child.props.key;
-    if (addedKeys.indexOf(key) === -1) {
-      if (nodeMap[key].oNode.index !== index) {
-        // figure out how to move nodes correctly...
-        console.log(oldNodes, nodes);
-        console.log(nodeMap[key].oNode.index, index);
-        if (
-          nodes[nodeMap[key].nNode.index].props.key ===
-          oldNodes[index].props.key
-        ) {
-          // swap
-          console.log("swap case");
-        } else {
-          // move and recalculate map?
-          console.log("move case");
-        }
-      }
-      patch(parent, parent.childNodes[index], nodeMap[key].oNode, child);
-    }
-  });
-}
-*/
 /* eslint-disable */
 function keyed(parent, oldNodes, nodes) {
   const nodeMap = {};
@@ -152,29 +122,12 @@ function keyed(parent, oldNodes, nodes) {
       // move and diff case...
       if (oNode.index !== i) {
         // move needs to happen here..
+        // if I can figure this out we get keyed done in 3 iterations instead of 4...
       }
       // diff in place now that move is handled for this index
       patch(parent, parent.childNodes[i], oNode.child, node);
     }
   }
-
-  /*
-  const c1OldNodes = cOldNodes.slice(0);
-  let delta = 0;
-  cOldNodes.forEach((node, index) => {
-    const key = node.props.key;
-    if (!nodeMap[key]) {
-      console.log("strange missing key");
-      console.log(nodeMap, cOldNodes, nodes, index, key);
-    }
-    if (nodeMap[key] && nodeMap[key].nNode === undefined) {
-      c1OldNodes.splice(index + delta, 1);
-      parent.removeChild(parent.childNodes[index + delta]);
-      delta--;
-    }
-  });
-  */
-  //diffAndMove(parent, c1OldNodes, nodes, addedKeys);
 }
 /* eslint-enable */
 
