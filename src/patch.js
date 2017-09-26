@@ -82,6 +82,7 @@ function unkeyed(parent, oldNodes, nodes) {
   }
 }
 
+/* can't do this and gain any perf...
 function diffAndMove(parent, oldNodes, nodes, addedKeys) {
   const nodeMap = {};
   oldNodes.forEach((child, index) => {
@@ -94,12 +95,23 @@ function diffAndMove(parent, oldNodes, nodes, addedKeys) {
       if (nodeMap[key].oNode.index !== index) {
         // figure out how to move nodes correctly...
         console.log(oldNodes, nodes);
-        console.log(nodeMap[key].index, index);
+        console.log(nodeMap[key].oNode.index, index);
+        if (
+          nodes[nodeMap[key].nNode.index].props.key ===
+          oldNodes[index].props.key
+        ) {
+          // swap
+          console.log("swap case");
+        } else {
+          // move and recalculate map?
+          console.log("move case");
+        }
       }
       patch(parent, parent.childNodes[index], nodeMap[key].oNode, child);
     }
   });
 }
+*/
 
 function keyed(parent, oldNodes, nodes) {
   const nodeMap = {};
@@ -130,13 +142,17 @@ function keyed(parent, oldNodes, nodes) {
   let delta = 0;
   cOldNodes.forEach((node, index) => {
     const key = node.props.key;
+    if (!nodeMap[key]) {
+      console.log("strange missing key");
+      console.log(nodeMap, cOldNodes, nodes, index, key);
+    }
     if (nodeMap[key] && nodeMap[key].nNode === undefined) {
       c1OldNodes.splice(index + delta, 1);
       parent.removeChild(parent.childNodes[index + delta]);
       delta--;
     }
   });
-  diffAndMove(parent, c1OldNodes, nodes, addedKeys);
+  //diffAndMove(parent, c1OldNodes, nodes, addedKeys);
 }
 
 function diffChildren(parent, oldNodes, nodes) {
