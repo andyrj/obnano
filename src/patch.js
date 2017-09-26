@@ -82,6 +82,16 @@ function unkeyed(parent, oldNodes, nodes) {
   }
 }
 
+function removalsComparator(a, b) {
+  if (a.index < b.index) {
+    return -1;
+  } else if (a.index > b.index) {
+    return 1;
+  } else {
+    return 0;
+  }
+}
+
 /* eslint-disable */
 function keyed(parent, oldNodes, nodes) {
   const addMap = {};
@@ -132,11 +142,57 @@ function keyed(parent, oldNodes, nodes) {
       moveMap[key].oNode.index = index;
     }
   });
-
-  // now cOldNodes and moveMap mirrors what is in dom, and all we have left are move and in-place diffs...
-  // which are easiest handled by simply looping twice, remove to map for oNode.index !== nNode.index,
+  // now cOldNodes and moveMap mirror what is in dom, and all we have left are move and in-place diffs...
+  // which are easiest handled by simply looping twice, first remove any keys in moveMap for oNode.index !== nNode.index,
   // and patching for others, then second loop test for key in removeMap and put in correct position...
-  
+  console.log("cOldNodes pre-removal:");
+  console.log(cOldNodes);
+  const removals = [];
+  let cOldNodesLen = cOldNodes.length;
+  i = 0; // reset index and delta...
+  delta = 0;
+  for(; i < cOldNodesLen + delta; i++) {
+    const key = cOldNodes[i + delta].props.key;
+    if (moveMap[key] !== undefined) {
+      const move = moveMap[key];
+
+      // diff in place...
+      const temp = parent.childNodes[i + delta];
+      patch(parent, temp, move.oNode.child, move.nNode.child);
+      if (move.oNode.index !== move.nNode.index) {
+        // move node...
+        parent.removeChild(temp);
+        console.log(i, move.nNode.index, move.oNode.index);
+        removals.push({ index: move.nNode.index, el: temp, node: cOldNodes[i + delta] });
+        cOldNodes.splice(i + delta, 1);
+        delta--;
+      }
+    }
+  }
+  // reset index and loop over nodes placing into dom at correct position...
+  i = 0;
+  delta = 0;
+  const sortedRemovals = removals.sort(removalsComparator);
+  //console.log("sortedRemovals: ");
+  //console.log(sortedRemovals);
+  console.log("pre-move cOldNodes: ");
+  console.log(cOldNodes);
+  for(; i < removals.length; i++) {
+    const removal = removals[i];
+    if (removal.index >= cOldNodes.length) {
+      cOldNodes.push(removal.node);
+      parent.appendChild(removal.el);
+    } else {
+      const domEl = parent.childNodes[removal.index - delta];
+      cOldNodes.splice(removal.index - delta, 0, removal.node);
+      parent.insertBefore(removal.el, domEl);
+    }
+    delta++;
+  }
+  console.log("cOldNodes: ");
+  console.log(cOldNodes);
+  console.log("nodes: ");
+  console.log(nodes);
 }
 /* eslint-enable */
 
