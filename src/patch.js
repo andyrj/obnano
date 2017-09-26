@@ -82,39 +82,23 @@ function unkeyed(parent, oldNodes, nodes) {
   }
 }
 
-function swap(parent, oldNodes, at, to) {
-  const startON = oldNodes[at];
-  const endON = oldNodes[to];
-  oldNodes.splice(at, 1);
-  oldNodes.splice(at, 0, endON);
-  oldNodes.splice(to, 1);
-  oldNodes.splice(to, 0, startON);
-  // same mutation to dom...
-  console.log(oldNodes);
-  /* refactor this causes problems...
-  const endDOM = parent.removeChild(parent.child[to]);
-  const startDOM = parent.replaceChild(endDOM, parent.childNodes[at]);
-  if (to - 1 >= oldNodes.length) {
-    parent.appdendChild(startDOM);
-  } else {
-    parent.insertBefore(startDOM, parent.childNodes[to - 1]);
-  }
-  */
-}
-
 /* eslint-disable */
 function keyed(parent, oldNodes, nodes) {
-  const nodeMap = {};
+  const addMap = {};
+  const moveMap = {};
   const cOldNodes = oldNodes.slice(0);
   nodes.forEach((child, index) => {
     const key = child.props.key;
-    nodeMap[key] = { nNode: { index, child } };
+    moveMap[key] = { nNode: { index, child } };
+    addMap[key] = {index, child};
   });
   let delta = 0;
+  let moveOrDiff = 0;
   oldNodes.forEach((child, index) => {
     const key = child.props.key;
-    if (nodeMap[key] !== undefined) {
-      nodeMap[key].oNode = { index, child };
+    if (moveMap[key] !== undefined) {
+      moveMap[key].oNode = { index, child };
+      delete addMap[key];
     } else {
       // remove node from dom and cOldNodes
       cOldNodes.splice(index + delta, 1);
@@ -122,60 +106,37 @@ function keyed(parent, oldNodes, nodes) {
       delta--;
     }
   });
-
+  // very small loop over keys in addMap to remove them from moveMap...
+  Object.keys(addMap).forEach(key => {
+    delete moveMap[key];
+  });
+  // cheap iteration over nodes adding keys found in addMap...
   let nodesLen = nodes.length;
   let i = 0;
-  delta = 0;
-  for (; i < nodesLen; i++) {
-    const node = nodes[i];
+  for(; i < nodesLen; i++) {
     const key = nodes[i].props.key;
-    if (nodeMap[key].oNode === undefined) {
-      // add node
-      if (i === cOldNodes.length) {
-        cOldNodes.push(node);
-        parent.appendChild(createElement(node));
+    if (addMap[key] !== undefined) {
+      if (i < cOldNodes.length) {
+        cOldNodes.splice(i, 0, nodes[i]);
+        parent.insertBefore(createElement(nodes[i]), parent.childNodes[i]);
       } else {
-        cOldNodes.splice(i, 0, node);
-        parent.insertBefore(createElement(node), parent.childNodes[i]);
+        cOldNodes.push(nodes[i]);
+        parent.appendChild(createElement(nodes[i]));
       }
-      delta++;
-    } else {
-      const oNode = nodeMap[key].oNode;
-      // move and diff case...
-      if (oNode.index !== i) {
-        // move needs to happen here..
-        // check for swap case...
-        
-        let hint = cOldNodes[oNode.index];
-        if (!hint) {
-          if (i + delta >= cOldNodes.length) {
-            hint = cOldNodes[cOldNodes.length - 1];
-          } else {
-            hint = cOldNodes[i + delta];
-          }
-        }
-        if (hint.props.key === node.props.key) {
-          // we need to swap oNode.index to i
-          swap(parent, cOldNodes, oNode.index, i);
-        }
-        console.log("cOldNodes:");
-        console.log(cOldNodes);
-        console.log("nodes: ");
-        console.log(nodes);
-        console.log(i, oNode.index);
-        /*
-        console.log("hint: ");
-        console.log(hint);
-        console.log("nodeMap[key]: ");
-        console.log(nodeMap[key]);
-        console.log("node: ");
-        console.log(node);
-        */
-      }
-      // diff in place now that move is handled for this index
-      patch(parent, parent.childNodes[i], oNode.child, node);
     }
   }
+  // update nodeMap oNode index has been changed by add and remove above and needs to be refreshed...
+  cOldNodes.forEach((old, index) => {
+    const key = old.props.key;
+    if (moveMap[key] && moveMap[key].oNode.index !== index) {
+      moveMap[key].oNode.index = index;
+    }
+  });
+
+  // now cOldNodes and moveMap mirrors what is in dom, and all we have left are move and in-place diffs...
+  // which are easiest handled by simply looping twice, remove to map for oNode.index !== nNode.index,
+  // and patching for others, then second loop test for key in removeMap and put in correct position...
+  
 }
 /* eslint-enable */
 
