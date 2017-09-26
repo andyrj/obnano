@@ -82,6 +82,26 @@ function unkeyed(parent, oldNodes, nodes) {
   }
 }
 
+function swap(parent, oldNodes, at, to) {
+  const startON = oldNodes[at];
+  const endON = oldNodes[to];
+  oldNodes.splice(at, 1);
+  oldNodes.splice(at, 0, endON);
+  oldNodes.splice(to, 1);
+  oldNodes.splice(to, 0, startON);
+  // same mutation to dom...
+  console.log(oldNodes);
+  /* refactor this causes problems...
+  const endDOM = parent.removeChild(parent.child[to]);
+  const startDOM = parent.replaceChild(endDOM, parent.childNodes[at]);
+  if (to - 1 >= oldNodes.length) {
+    parent.appdendChild(startDOM);
+  } else {
+    parent.insertBefore(startDOM, parent.childNodes[to - 1]);
+  }
+  */
+}
+
 /* eslint-disable */
 function keyed(parent, oldNodes, nodes) {
   const nodeMap = {};
@@ -105,6 +125,7 @@ function keyed(parent, oldNodes, nodes) {
 
   let nodesLen = nodes.length;
   let i = 0;
+  delta = 0;
   for (; i < nodesLen; i++) {
     const node = nodes[i];
     const key = nodes[i].props.key;
@@ -117,12 +138,39 @@ function keyed(parent, oldNodes, nodes) {
         cOldNodes.splice(i, 0, node);
         parent.insertBefore(createElement(node), parent.childNodes[i]);
       }
+      delta++;
     } else {
       const oNode = nodeMap[key].oNode;
       // move and diff case...
       if (oNode.index !== i) {
         // move needs to happen here..
-        // if I can figure this out we get keyed done in 3 iterations instead of 4...
+        // check for swap case...
+        
+        let hint = cOldNodes[oNode.index];
+        if (!hint) {
+          if (i + delta >= cOldNodes.length) {
+            hint = cOldNodes[cOldNodes.length - 1];
+          } else {
+            hint = cOldNodes[i + delta];
+          }
+        }
+        if (hint.props.key === node.props.key) {
+          // we need to swap oNode.index to i
+          swap(parent, cOldNodes, oNode.index, i);
+        }
+        console.log("cOldNodes:");
+        console.log(cOldNodes);
+        console.log("nodes: ");
+        console.log(nodes);
+        console.log(i, oNode.index);
+        /*
+        console.log("hint: ");
+        console.log(hint);
+        console.log("nodeMap[key]: ");
+        console.log(nodeMap[key]);
+        console.log("node: ");
+        console.log(node);
+        */
       }
       // diff in place now that move is handled for this index
       patch(parent, parent.childNodes[i], oNode.child, node);

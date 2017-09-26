@@ -1,0 +1,694 @@
+> nyc ava
+
+cOldNodes:
+[ { tag: 'div', props: { key: 0 }, children: [ '0' ] },
+  { tag: 'div', props: { key: 1 }, children: [ '1' ] },
+  { tag: 'div', props: { key: 4 }, children: [ '4' ] },
+  { tag: 'div', props: { key: 2 }, children: [ '2' ] },
+  { tag: 'div', props: { key: 3 }, children: [ '3' ] } ]
+nodes:
+[ { tag: 'div', props: { key: 0 }, children: [ '0' ] },
+  { tag: 'div', props: { key: 1 }, children: [ '1' ] },
+  { tag: 'div', props: { key: 4 }, children: [ '4' ] },
+  { tag: 'div', props: { key: 2 }, children: [ '2' ] },
+  { tag: 'div', props: { key: 3 }, children: [ '3' ] } ]
+3 2
+hint:
+{ tag: 'div', props: { key: 4 }, children: [ '4' ] }
+nodeMap[key]:
+{ nNode:
+   { index: 3,
+     child: { tag: 'div', props: [Object], children: [Array] } },
+  oNode:
+   { index: 2,
+     child: { tag: 'div', props: [Object], children: [Array] } } }
+node:
+{ tag: 'div', props: { key: 2 }, children: [ '2' ] }
+cOldNodes:
+[ { tag: 'div', props: { key: 0 }, children: [ '0' ] },
+  { tag: 'div', props: { key: 1 }, children: [ '1' ] },
+  { tag: 'div', props: { key: 4 }, children: [ '4' ] },
+  { tag: 'div', props: { key: 2 }, children: [ '2' ] },
+  { tag: 'div', props: { key: 3 }, children: [ '3' ] } ]
+nodes:
+[ { tag: 'div', props: { key: 0 }, children: [ '0' ] },
+  { tag: 'div', props: { key: 1 }, children: [ '1' ] },
+  { tag: 'div', props: { key: 4 }, children: [ '4' ] },
+  { tag: 'div', props: { key: 2 }, children: [ '2' ] },
+  { tag: 'div', props: { key: 3 }, children: [ '3' ] } ]
+4 3
+hint:
+{ tag: 'div', props: { key: 2 }, children: [ '2' ] }
+nodeMap[key]:
+{ nNode:
+   { index: 4,
+     child: { tag: 'div', props: [Object], children: [Array] } },
+  oNode:
+   { index: 3,
+     child: { tag: 'div', props: [Object], children: [Array] } } }
+node:
+{ tag: 'div', props: { key: 3 }, children: [ '3' ] }
+cOldNodes:
+[ { tag: 'div', props: { key: 5 }, children: [ '5' ] },
+  { tag: 'div', props: { key: 0 }, children: [ '0' ] },
+  { tag: 'div', props: { key: 1 }, children: [ '1' ] },
+  { tag: 'div', props: { key: 4 }, children: [ '4' ] },
+  { tag: 'div', props: { key: 2 }, children: [ '2' ] },
+  { tag: 'div', props: { key: 3 }, children: [ '3' ] } ]
+nodes:
+[ { tag: 'div', props: { key: 5 }, children: [ '5' ] },
+  { tag: 'div', props: { key: 0 }, children: [ '0' ] },
+  { tag: 'div', props: { key: 1 }, children: [ '1' ] },
+  { tag: 'div', props: { key: 4 }, children: [ '4' ] },
+  { tag: 'div', props: { key: 2 }, children: [ '2' ] },
+  { tag: 'div', props: { key: 3 }, children: [ '3' ] } ]
+1 0
+hint:
+{ tag: 'div', props: { key: 5 }, children: [ '5' ] }
+nodeMap[key]:
+{ nNode:
+   { index: 1,
+     child: { tag: 'div', props: [Object], children: [Array] } },
+  oNode:
+   { index: 0,
+     child: { tag: 'div', props: [Object], children: [Array] } } }
+node:
+{ tag: 'div', props: { key: 0 }, children: [ '0' ] }
+cOldNodes:
+[ { tag: 'div', props: { key: 5 }, children: [ '5' ] },
+  { tag: 'div', props: { key: 0 }, children: [ '0' ] },
+  { tag: 'div', props: { key: 1 }, children: [ '1' ] },
+  { tag: 'div', props: { key: 4 }, children: [ '4' ] },
+  { tag: 'div', props: { key: 2 }, children: [ '2' ] },
+  { tag: 'div', props: { key: 3 }, children: [ '3' ] } ]
+nodes:
+[ { tag: 'div', props: { key: 5 }, children: [ '5' ] },
+  { tag: 'div', props: { key: 0 }, children: [ '0' ] },
+  { tag: 'div', props: { key: 1 }, children: [ '1' ] },
+  { tag: 'div', props: { key: 4 }, children: [ '4' ] },
+  { tag: 'div', props: { key: 2 }, children: [ '2' ] },
+  { tag: 'div', props: { key: 3 }, children: [ '3' ] } ]
+2 1
+hint:
+{ tag: 'div', props: { key: 0 }, children: [ '0' ] }
+nodeMap[key]:
+{ nNode:
+   { index: 2,
+     child: { tag: 'div', props: [Object], children: [Array] } },
+  oNode:
+   { index: 1,
+     child: { tag: 'div', props: [Object], children: [Array] } } }
+node:
+{ tag: 'div', props: { key: 1 }, children: [ '1' ] }
+cOldNodes:
+[ { tag: 'div', props: { key: 5 }, children: [ '5' ] },
+  { tag: 'div', props: { key: 0 }, children: [ '0' ] },
+  { tag: 'div', props: { key: 1 }, children: [ '1' ] },
+  { tag: 'div', props: { key: 4 }, children: [ '4' ] },
+  { tag: 'div', props: { key: 2 }, children: [ '2' ] },
+  { tag: 'div', props: { key: 3 }, children: [ '3' ] } ]
+nodes:
+[ { tag: 'div', props: { key: 5 }, children: [ '5' ] },
+  { tag: 'div', props: { key: 0 }, children: [ '0' ] },
+  { tag: 'div', props: { key: 1 }, children: [ '1' ] },
+  { tag: 'div', props: { key: 4 }, children: [ '4' ] },
+  { tag: 'div', props: { key: 2 }, children: [ '2' ] },
+  { tag: 'div', props: { key: 3 }, children: [ '3' ] } ]
+3 2
+hint:
+{ tag: 'div', props: { key: 1 }, children: [ '1' ] }
+nodeMap[key]:
+{ nNode:
+   { index: 3,
+     child: { tag: 'div', props: [Object], children: [Array] } },
+  oNode:
+   { index: 2,
+     child: { tag: 'div', props: [Object], children: [Array] } } }
+node:
+{ tag: 'div', props: { key: 4 }, children: [ '4' ] }
+cOldNodes:
+[ { tag: 'div', props: { key: 5 }, children: [ '5' ] },
+  { tag: 'div', props: { key: 0 }, children: [ '0' ] },
+  { tag: 'div', props: { key: 1 }, children: [ '1' ] },
+  { tag: 'div', props: { key: 4 }, children: [ '4' ] },
+  { tag: 'div', props: { key: 2 }, children: [ '2' ] },
+  { tag: 'div', props: { key: 3 }, children: [ '3' ] } ]
+nodes:
+[ { tag: 'div', props: { key: 5 }, children: [ '5' ] },
+  { tag: 'div', props: { key: 0 }, children: [ '0' ] },
+  { tag: 'div', props: { key: 1 }, children: [ '1' ] },
+  { tag: 'div', props: { key: 4 }, children: [ '4' ] },
+  { tag: 'div', props: { key: 2 }, children: [ '2' ] },
+  { tag: 'div', props: { key: 3 }, children: [ '3' ] } ]
+4 3
+hint:
+{ tag: 'div', props: { key: 4 }, children: [ '4' ] }
+nodeMap[key]:
+{ nNode:
+   { index: 4,
+     child: { tag: 'div', props: [Object], children: [Array] } },
+  oNode:
+   { index: 3,
+     child: { tag: 'div', props: [Object], children: [Array] } } }
+node:
+{ tag: 'div', props: { key: 2 }, children: [ '2' ] }
+cOldNodes:
+[ { tag: 'div', props: { key: 5 }, children: [ '5' ] },
+  { tag: 'div', props: { key: 0 }, children: [ '0' ] },
+  { tag: 'div', props: { key: 1 }, children: [ '1' ] },
+  { tag: 'div', props: { key: 4 }, children: [ '4' ] },
+  { tag: 'div', props: { key: 2 }, children: [ '2' ] },
+  { tag: 'div', props: { key: 3 }, children: [ '3' ] } ]
+nodes:
+[ { tag: 'div', props: { key: 5 }, children: [ '5' ] },
+  { tag: 'div', props: { key: 0 }, children: [ '0' ] },
+  { tag: 'div', props: { key: 1 }, children: [ '1' ] },
+  { tag: 'div', props: { key: 4 }, children: [ '4' ] },
+  { tag: 'div', props: { key: 2 }, children: [ '2' ] },
+  { tag: 'div', props: { key: 3 }, children: [ '3' ] } ]
+5 4
+hint:
+{ tag: 'div', props: { key: 2 }, children: [ '2' ] }
+nodeMap[key]:
+{ nNode:
+   { index: 5,
+     child: { tag: 'div', props: [Object], children: [Array] } },
+  oNode:
+   { index: 4,
+     child: { tag: 'div', props: [Object], children: [Array] } } }
+node:
+{ tag: 'div', props: { key: 3 }, children: [ '3' ] }
+cOldNodes:
+[ { tag: 'div', props: { key: 0 }, children: [ '0' ] },
+  { tag: 'div', props: { key: 1 }, children: [ '1' ] },
+  { tag: 'div', props: { key: 4 }, children: [ '4' ] },
+  { tag: 'div', props: { key: 2 }, children: [ '2' ] },
+  { tag: 'div', props: { key: 3 }, children: [ '3' ] } ]
+nodes:
+[ { tag: 'div', props: { key: 0 }, children: [ '0' ] },
+  { tag: 'div', props: { key: 1 }, children: [ '1' ] },
+  { tag: 'div', props: { key: 4 }, children: [ '4' ] },
+  { tag: 'div', props: { key: 2 }, children: [ '2' ] },
+  { tag: 'div', props: { key: 3 }, children: [ '3' ] } ]
+4 1
+hint:
+{ tag: 'div', props: { key: 1 }, children: [ '1' ] }
+cOldNodes:
+nodeMap[key]:
+{ nNode:
+   { index: 4,
+     child: { tag: 'div', props: [Object], children: [Array] } },
+  oNode:
+   { index: 1,
+     child: { tag: 'div', props: [Object], children: [Array] } } }
+node:
+{ tag: 'div', props: { key: 3 }, children: [ '3' ] }
+[ { tag: 'div', props: { key: 8 }, children: [ '8' ] },
+  { tag: 'div', props: { key: 7 }, children: [ '7' ] },
+  { tag: 'div', props: { key: 6 }, children: [ '6' ] },
+  { tag: 'div', props: { key: 5 }, children: [ '5' ] },
+  { tag: 'div', props: { key: 0 }, children: [ '0' ] },
+  { tag: 'div', props: { key: 1 }, children: [ '1' ] },
+  { tag: 'div', props: { key: 4 }, children: [ '4' ] },
+  { tag: 'div', props: { key: 2 }, children: [ '2' ] },
+  { tag: 'div', props: { key: 3 }, children: [ '3' ] } ]
+nodes:
+[ { tag: 'div', props: { key: 8 }, children: [ '8' ] },
+  { tag: 'div', props: { key: 7 }, children: [ '7' ] },
+  { tag: 'div', props: { key: 6 }, children: [ '6' ] },
+  { tag: 'div', props: { key: 5 }, children: [ '5' ] },
+  { tag: 'div', props: { key: 0 }, children: [ '0' ] },
+  { tag: 'div', props: { key: 1 }, children: [ '1' ] },
+  { tag: 'div', props: { key: 4 }, children: [ '4' ] },
+  { tag: 'div', props: { key: 2 }, children: [ '2' ] },
+  { tag: 'div', props: { key: 3 }, children: [ '3' ] } ]
+cOldNodes:
+[ { tag: 'div', props: { key: 5 }, children: [ '5' ] },
+  { tag: 'div', props: { key: 1 }, children: [ '1' ] },
+  { tag: 'div', props: { key: 2 }, children: [ '2' ] } ]
+nodes:
+[ { tag: 'div', props: { key: 5 }, children: [ '5' ] },
+  { tag: 'div', props: { key: 1 }, children: [ '1' ] },
+  { tag: 'div', props: { key: 2 }, children: [ '2' ] } ]
+2 3
+hint:
+{ tag: 'div', props: { key: 2 }, children: [ '2' ] }
+nodeMap[key]:
+{ nNode:
+   { index: 2,
+     child: { tag: 'div', props: [Object], children: [Array] } },
+  oNode:
+   { index: 3,
+     child: { tag: 'div', props: [Object], children: [Array] } } }
+node:
+{ tag: 'div', props: { key: 2 }, children: [ '2' ] }
+3 0
+hint:
+{ tag: 'div', props: { key: 8 }, children: [ '8' ] }
+nodeMap[key]:
+{ nNode:
+   { index: 3,
+     child: { tag: 'div', props: [Object], children: [Array] } },
+  oNode:
+   { index: 0,
+     child: { tag: 'div', props: [Object], children: [Array] } } }
+node:
+{ tag: 'div', props: { key: 5 }, children: [ '5' ] }
+cOldNodes:
+[ { tag: 'div', props: { key: 8 }, children: [ '8' ] },
+  { tag: 'div', props: { key: 7 }, children: [ '7' ] },
+  { tag: 'div', props: { key: 6 }, children: [ '6' ] },
+  { tag: 'div', props: { key: 5 }, children: [ '5' ] },
+  { tag: 'div', props: { key: 0 }, children: [ '0' ] },
+  { tag: 'div', props: { key: 1 }, children: [ '1' ] },
+  { tag: 'div', props: { key: 4 }, children: [ '4' ] },
+  { tag: 'div', props: { key: 2 }, children: [ '2' ] },
+  { tag: 'div', props: { key: 3 }, children: [ '3' ] } ]
+nodes:
+[ { tag: 'div', props: { key: 8 }, children: [ '8' ] },
+  { tag: 'div', props: { key: 7 }, children: [ '7' ] },
+  { tag: 'div', props: { key: 6 }, children: [ '6' ] },
+  { tag: 'div', props: { key: 5 }, children: [ '5' ] },
+  { tag: 'div', props: { key: 0 }, children: [ '0' ] },
+  { tag: 'div', props: { key: 1 }, children: [ '1' ] },
+  { tag: 'div', props: { key: 4 }, children: [ '4' ] },
+  { tag: 'div', props: { key: 2 }, children: [ '2' ] },
+  { tag: 'div', props: { key: 3 }, children: [ '3' ] } ]
+4 1
+hint:
+{ tag: 'div', props: { key: 7 }, children: [ '7' ] }
+nodeMap[key]:
+{ nNode:
+   { index: 4,
+     child: { tag: 'div', props: [Object], children: [Array] } },
+  oNode:
+   { index: 1,
+     child: { tag: 'div', props: [Object], children: [Array] } } }
+node:
+{ tag: 'div', props: { key: 0 }, children: [ '0' ] }
+cOldNodes:
+[ { tag: 'div', props: { key: 8 }, children: [ '8' ] },
+  { tag: 'div', props: { key: 7 }, children: [ '7' ] },
+  { tag: 'div', props: { key: 6 }, children: [ '6' ] },
+  { tag: 'div', props: { key: 5 }, children: [ '5' ] },
+  { tag: 'div', props: { key: 0 }, children: [ '0' ] },
+  { tag: 'div', props: { key: 1 }, children: [ '1' ] },
+  { tag: 'div', props: { key: 4 }, children: [ '4' ] },
+  { tag: 'div', props: { key: 2 }, children: [ '2' ] },
+  { tag: 'div', props: { key: 3 }, children: [ '3' ] } ]
+nodes:
+[ { tag: 'div', props: { key: 8 }, children: [ '8' ] },
+  { tag: 'div', props: { key: 7 }, children: [ '7' ] },
+  { tag: 'div', props: { key: 6 }, children: [ '6' ] },
+  { tag: 'div', props: { key: 5 }, children: [ '5' ] },
+  { tag: 'div', props: { key: 0 }, children: [ '0' ] },
+  { tag: 'div', props: { key: 1 }, children: [ '1' ] },
+  { tag: 'div', props: { key: 4 }, children: [ '4' ] },
+  { tag: 'div', props: { key: 2 }, children: [ '2' ] },
+  { tag: 'div', props: { key: 3 }, children: [ '3' ] } ]
+5 2
+hint:
+{ tag: 'div', props: { key: 6 }, children: [ '6' ] }
+nodeMap[key]:
+{ nNode:
+   { index: 5,
+     child: { tag: 'div', props: [Object], children: [Array] } },
+  oNode:
+   { index: 2,
+     child: { tag: 'div', props: [Object], children: [Array] } } }
+node:
+{ tag: 'div', props: { key: 1 }, children: [ '1' ] }
+cOldNodes:
+[ { tag: 'div', props: { key: 8 }, children: [ '8' ] },
+  { tag: 'div', props: { key: 7 }, children: [ '7' ] },
+  { tag: 'div', props: { key: 6 }, children: [ '6' ] },
+  { tag: 'div', props: { key: 5 }, children: [ '5' ] },
+  { tag: 'div', props: { key: 0 }, children: [ '0' ] },
+  { tag: 'div', props: { key: 1 }, children: [ '1' ] },
+  { tag: 'div', props: { key: 4 }, children: [ '4' ] },
+  { tag: 'div', props: { key: 2 }, children: [ '2' ] },
+  { tag: 'div', props: { key: 3 }, children: [ '3' ] } ]
+nodes:
+[ { tag: 'div', props: { key: 8 }, children: [ '8' ] },
+  { tag: 'div', props: { key: 7 }, children: [ '7' ] },
+  { tag: 'div', props: { key: 6 }, children: [ '6' ] },
+  { tag: 'div', props: { key: 5 }, children: [ '5' ] },
+  { tag: 'div', props: { key: 0 }, children: [ '0' ] },
+  { tag: 'div', props: { key: 1 }, children: [ '1' ] },
+  { tag: 'div', props: { key: 4 }, children: [ '4' ] },
+  { tag: 'div', props: { key: 2 }, children: [ '2' ] },
+  { tag: 'div', props: { key: 3 }, children: [ '3' ] } ]
+6 3
+hint:
+{ tag: 'div', props: { key: 5 }, children: [ '5' ] }
+nodeMap[key]:
+{ nNode:
+   { index: 6,
+     child: { tag: 'div', props: [Object], children: [Array] } },
+  oNode:
+   { index: 3,
+     child: { tag: 'div', props: [Object], children: [Array] } } }
+node:
+{ tag: 'div', props: { key: 4 }, children: [ '4' ] }
+cOldNodes:
+[ { tag: 'div', props: { key: 8 }, children: [ '8' ] },
+  { tag: 'div', props: { key: 7 }, children: [ '7' ] },
+  { tag: 'div', props: { key: 6 }, children: [ '6' ] },
+  { tag: 'div', props: { key: 5 }, children: [ '5' ] },
+  { tag: 'div', props: { key: 0 }, children: [ '0' ] },
+  { tag: 'div', props: { key: 1 }, children: [ '1' ] },
+  { tag: 'div', props: { key: 4 }, children: [ '4' ] },
+  { tag: 'div', props: { key: 2 }, children: [ '2' ] },
+  { tag: 'div', props: { key: 3 }, children: [ '3' ] } ]
+nodes:
+[ { tag: 'div', props: { key: 8 }, children: [ '8' ] },
+  { tag: 'div', props: { key: 7 }, children: [ '7' ] },
+  { tag: 'div', props: { key: 6 }, children: [ '6' ] },
+  { tag: 'div', props: { key: 5 }, children: [ '5' ] },
+  { tag: 'div', props: { key: 0 }, children: [ '0' ] },
+  { tag: 'div', props: { key: 1 }, children: [ '1' ] },
+  { tag: 'div', props: { key: 4 }, children: [ '4' ] },
+  { tag: 'div', props: { key: 2 }, children: [ '2' ] },
+  { tag: 'div', props: { key: 3 }, children: [ '3' ] } ]
+7 4
+hint:
+{ tag: 'div', props: { key: 0 }, children: [ '0' ] }
+nodeMap[key]:
+{ nNode:
+   { index: 7,
+     child: { tag: 'div', props: [Object], children: [Array] } },
+  oNode:
+   { index: 4,
+     child: { tag: 'div', props: [Object], children: [Array] } } }
+node:
+{ tag: 'div', props: { key: 2 }, children: [ '2' ] }
+cOldNodes:
+[ { tag: 'div', props: { key: 8 }, children: [ '8' ] },
+  { tag: 'div', props: { key: 7 }, children: [ '7' ] },
+  { tag: 'div', props: { key: 6 }, children: [ '6' ] },
+  { tag: 'div', props: { key: 5 }, children: [ '5' ] },
+  { tag: 'div', props: { key: 0 }, children: [ '0' ] },
+  { tag: 'div', props: { key: 1 }, children: [ '1' ] },
+  { tag: 'div', props: { key: 4 }, children: [ '4' ] },
+  { tag: 'div', props: { key: 2 }, children: [ '2' ] },
+  { tag: 'div', props: { key: 3 }, children: [ '3' ] } ]
+nodes:
+[ { tag: 'div', props: { key: 8 }, children: [ '8' ] },
+  { tag: 'div', props: { key: 7 }, children: [ '7' ] },
+  { tag: 'div', props: { key: 6 }, children: [ '6' ] },
+  { tag: 'div', props: { key: 5 }, children: [ '5' ] },
+  { tag: 'div', props: { key: 0 }, children: [ '0' ] },
+  { tag: 'div', props: { key: 1 }, children: [ '1' ] },
+  { tag: 'div', props: { key: 4 }, children: [ '4' ] },
+  { tag: 'div', props: { key: 2 }, children: [ '2' ] },
+  { tag: 'div', props: { key: 3 }, children: [ '3' ] } ]
+8 5
+hint:
+{ tag: 'div', props: { key: 1 }, children: [ '1' ] }
+nodeMap[key]:
+{ nNode:
+   { index: 8,
+     child: { tag: 'div', props: [Object], children: [Array] } },
+  oNode:
+   { index: 5,
+     child: { tag: 'div', props: [Object], children: [Array] } } }
+node:
+{ tag: 'div', props: { key: 3 }, children: [ '3' ] }
+cOldNodes:
+[ { tag: 'div', props: { key: 1 }, children: [ '1' ] },
+  { tag: 'div', props: { key: 2 }, children: [ '2' ] },
+  { tag: 'div', props: { key: 3 }, children: [ '3' ] },
+  { tag: 'div', props: { key: 4 }, children: [ '4' ] } ]
+nodes:
+[ { tag: 'div', props: { key: 1 }, children: [ '1' ] },
+  { tag: 'div', props: { key: 2 }, children: [ '2' ] },
+  { tag: 'div', props: { key: 3 }, children: [ '3' ] },
+  { tag: 'div', props: { key: 4 }, children: [ '4' ] } ]
+0 1
+hint:
+{ tag: 'div', props: { key: 2 }, children: [ '2' ] }
+nodeMap[key]:
+{ nNode:
+   { index: 0,
+     child: { tag: 'div', props: [Object], children: [Array] } },
+  oNode:
+   { index: 1,
+     child: { tag: 'div', props: [Object], children: [Array] } } }
+node:
+{ tag: 'div', props: { key: 1 }, children: [ '1' ] }
+cOldNodes:
+[ { tag: 'div', props: { key: 1 }, children: [ '1' ] },
+  { tag: 'div', props: { key: 2 }, children: [ '2' ] },
+  { tag: 'div', props: { key: 3 }, children: [ '3' ] },
+  { tag: 'div', props: { key: 4 }, children: [ '4' ] } ]
+nodes:
+[ { tag: 'div', props: { key: 1 }, children: [ '1' ] },
+  { tag: 'div', props: { key: 2 }, children: [ '2' ] },
+  { tag: 'div', props: { key: 3 }, children: [ '3' ] },
+  { tag: 'div', props: { key: 4 }, children: [ '4' ] } ]
+1 2
+hint:
+{ tag: 'div', props: { key: 3 }, children: [ '3' ] }
+nodeMap[key]:
+{ nNode:
+   { index: 1,
+     child: { tag: 'div', props: [Object], children: [Array] } },
+  oNode:
+   { index: 2,
+     child: { tag: 'div', props: [Object], children: [Array] } } }
+node:
+{ tag: 'div', props: { key: 2 }, children: [ '2' ] }
+cOldNodes:
+[ { tag: 'div', props: { key: 1 }, children: [ '1' ] },
+  { tag: 'div', props: { key: 2 }, children: [ '2' ] },
+  { tag: 'div', props: { key: 3 }, children: [ '3' ] },
+  { tag: 'div', props: { key: 4 }, children: [ '4' ] } ]
+nodes:
+[ { tag: 'div', props: { key: 1 }, children: [ '1' ] },
+  { tag: 'div', props: { key: 2 }, children: [ '2' ] },
+  { tag: 'div', props: { key: 3 }, children: [ '3' ] },
+  { tag: 'div', props: { key: 4 }, children: [ '4' ] } ]
+2 3
+hint:
+{ tag: 'div', props: { key: 4 }, children: [ '4' ] }
+nodeMap[key]:
+{ nNode:
+   { index: 2,
+     child: { tag: 'div', props: [Object], children: [Array] } },
+  oNode:
+   { index: 3,
+     child: { tag: 'div', props: [Object], children: [Array] } } }
+node:
+{ tag: 'div', props: { key: 3 }, children: [ '3' ] }
+cOldNodes:
+[ { tag: 'div', props: { key: 1 }, children: [ '1' ] },
+  { tag: 'div', props: { key: 2 }, children: [ '2' ] },
+  { tag: 'div', props: { key: 3 }, children: [ '3' ] },
+  { tag: 'div', props: { key: 4 }, children: [ '4' ] } ]
+nodes:
+[ { tag: 'div', props: { key: 1 }, children: [ '1' ] },
+  { tag: 'div', props: { key: 2 }, children: [ '2' ] },
+  { tag: 'div', props: { key: 3 }, children: [ '3' ] },
+  { tag: 'div', props: { key: 4 }, children: [ '4' ] } ]
+3 4
+hint:
+{ tag: 'div', props: { key: 4 }, children: [ '4' ] }
+nodeMap[key]:
+{ nNode:
+   { index: 3,
+     child: { tag: 'div', props: [Object], children: [Array] } },
+  oNode:
+   { index: 4,
+     child: { tag: 'div', props: [Object], children: [Array] } } }
+node:
+{ tag: 'div', props: { key: 4 }, children: [ '4' ] }
+cOldNodes:
+[ { tag: 'div', props: { key: 1 }, children: [ '1' ] },
+  { tag: 'div', props: { key: 3 }, children: [ '3' ] } ]
+nodes:
+[ { tag: 'div', props: { key: 1 }, children: [ '1' ] },
+  { tag: 'div', props: { key: 3 }, children: [ '3' ] } ]
+1 2
+hint:
+{ tag: 'div', props: { key: 3 }, children: [ '3' ] }
+nodeMap[key]:
+{ nNode:
+   { index: 1,
+     child: { tag: 'div', props: [Object], children: [Array] } },
+  oNode:
+   { index: 2,
+     child: { tag: 'div', props: [Object], children: [Array] } } }
+node:
+{ tag: 'div', props: { key: 3 }, children: [ '3' ] }
+starting move-keyed
+cOldNodes:
+[ { tag: 'div', props: { key: 0 }, children: [ '0' ] },
+  { tag: 'div', props: { key: 1 }, children: [ '1' ] },
+  { tag: 'div', props: { key: 2 }, children: [ '2' ] },
+  { tag: 'div', props: { key: 3 }, children: [ '3' ] },
+  { tag: 'div', props: { key: 4 }, children: [ '4' ] } ]
+nodes:
+[ { tag: 'div', props: { key: 4 }, children: [ '4' ] },
+  { tag: 'div', props: { key: 1 }, children: [ '1' ] },
+  { tag: 'div', props: { key: 2 }, children: [ '2' ] },
+  { tag: 'div', props: { key: 3 }, children: [ '3' ] },
+  { tag: 'div', props: { key: 0 }, children: [ '0' ] } ]
+0 4
+hint:
+{ tag: 'div', props: { key: 4 }, children: [ '4' ] }
+nodeMap[key]:
+{ nNode:
+   { index: 0,
+     child: { tag: 'div', props: [Object], children: [Array] } },
+  oNode:
+   { index: 4,
+     child: { tag: 'div', props: [Object], children: [Array] } } }
+node:
+{ tag: 'div', props: { key: 4 }, children: [ '4' ] }
+cOldNodes:
+[ { tag: 'div', props: { key: 0 }, children: [ '0' ] },
+  { tag: 'div', props: { key: 1 }, children: [ '1' ] },
+  { tag: 'div', props: { key: 2 }, children: [ '2' ] },
+  { tag: 'div', props: { key: 3 }, children: [ '3' ] },
+  { tag: 'div', props: { key: 4 }, children: [ '4' ] } ]
+nodes:
+[ { tag: 'div', props: { key: 4 }, children: [ '4' ] },
+  { tag: 'div', props: { key: 1 }, children: [ '1' ] },
+  { tag: 'div', props: { key: 2 }, children: [ '2' ] },
+  { tag: 'div', props: { key: 3 }, children: [ '3' ] },
+  { tag: 'div', props: { key: 0 }, children: [ '0' ] } ]
+4 0
+hint:
+{ tag: 'div', props: { key: 0 }, children: [ '0' ] }
+nodeMap[key]:
+{ nNode:
+   { index: 4,
+     child: { tag: 'div', props: [Object], children: [Array] } },
+  oNode:
+   { index: 0,
+     child: { tag: 'div', props: [Object], children: [Array] } } }
+node:
+{ tag: 'div', props: { key: 0 }, children: [ '0' ] }
+cOldNodes:
+[ { tag: 'div', props: { key: 4 }, children: [ '4' ] },
+  { tag: 'div', props: { key: 1 }, children: [ '1' ] },
+  { tag: 'div', props: { key: 2 }, children: [ '2' ] },
+  { tag: 'div', props: { key: 3 }, children: [ '3' ] },
+  { tag: 'div', props: { key: 0 }, children: [ '0' ] } ]
+nodes:
+[ { tag: 'div', props: { key: 2 }, children: [ '2' ] },
+  { tag: 'div', props: { key: 0 }, children: [ '0' ] },
+  { tag: 'div', props: { key: 4 }, children: [ '4' ] },
+  { tag: 'div', props: { key: 3 }, children: [ '3' ] },
+  { tag: 'div', props: { key: 1 }, children: [ '1' ] } ]
+0 2
+hint:
+{ tag: 'div', props: { key: 2 }, children: [ '2' ] }
+nodeMap[key]:
+{ nNode:
+   { index: 0,
+     child: { tag: 'div', props: [Object], children: [Array] } },
+  oNode:
+   { index: 2,
+     child: { tag: 'div', props: [Object], children: [Array] } } }
+node:
+{ tag: 'div', props: { key: 2 }, children: [ '2' ] }
+cOldNodes:
+[ { tag: 'div', props: { key: 4 }, children: [ '4' ] },
+  { tag: 'div', props: { key: 1 }, children: [ '1' ] },
+  { tag: 'div', props: { key: 2 }, children: [ '2' ] },
+  { tag: 'div', props: { key: 3 }, children: [ '3' ] },
+  { tag: 'div', props: { key: 0 }, children: [ '0' ] } ]
+nodes:
+[ { tag: 'div', props: { key: 2 }, children: [ '2' ] },
+  { tag: 'div', props: { key: 0 }, children: [ '0' ] },
+  { tag: 'div', props: { key: 4 }, children: [ '4' ] },
+  { tag: 'div', props: { key: 3 }, children: [ '3' ] },
+  { tag: 'div', props: { key: 1 }, children: [ '1' ] } ]
+1 4
+hint:
+{ tag: 'div', props: { key: 0 }, children: [ '0' ] }
+nodeMap[key]:
+{ nNode:
+   { index: 1,
+     child: { tag: 'div', props: [Object], children: [Array] } },
+  oNode:
+   { index: 4,
+     child: { tag: 'div', props: [Object], children: [Array] } } }
+node:
+{ tag: 'div', props: { key: 0 }, children: [ '0' ] }
+cOldNodes:
+[ { tag: 'div', props: { key: 4 }, children: [ '4' ] },
+  { tag: 'div', props: { key: 1 }, children: [ '1' ] },
+  { tag: 'div', props: { key: 2 }, children: [ '2' ] },
+  { tag: 'div', props: { key: 3 }, children: [ '3' ] },
+  { tag: 'div', props: { key: 0 }, children: [ '0' ] } ]
+nodes:
+[ { tag: 'div', props: { key: 2 }, children: [ '2' ] },
+  { tag: 'div', props: { key: 0 }, children: [ '0' ] },
+  { tag: 'div', props: { key: 4 }, children: [ '4' ] },
+  { tag: 'div', props: { key: 3 }, children: [ '3' ] },
+  { tag: 'div', props: { key: 1 }, children: [ '1' ] } ]
+2 0
+hint:
+{ tag: 'div', props: { key: 4 }, children: [ '4' ] }
+nodeMap[key]:
+{ nNode:
+   { index: 2,
+     child: { tag: 'div', props: [Object], children: [Array] } },
+  oNode:
+   { index: 0,
+     child: { tag: 'div', props: [Object], children: [Array] } } }
+node:
+{ tag: 'div', props: { key: 4 }, children: [ '4' ] }
+cOldNodes:
+[ { tag: 'div', props: { key: 4 }, children: [ '4' ] },
+  { tag: 'div', props: { key: 1 }, children: [ '1' ] },
+  { tag: 'div', props: { key: 2 }, children: [ '2' ] },
+  { tag: 'div', props: { key: 3 }, children: [ '3' ] },
+  { tag: 'div', props: { key: 0 }, children: [ '0' ] } ]
+nodes:
+[ { tag: 'div', props: { key: 2 }, children: [ '2' ] },
+  { tag: 'div', props: { key: 0 }, children: [ '0' ] },
+  { tag: 'div', props: { key: 4 }, children: [ '4' ] },
+  { tag: 'div', props: { key: 3 }, children: [ '3' ] },
+  { tag: 'div', props: { key: 1 }, children: [ '1' ] } ]
+4 1
+hint:
+{ tag: 'div', props: { key: 1 }, children: [ '1' ] }
+nodeMap[key]:
+{ nNode:
+   { index: 4,
+     child: { tag: 'div', props: [Object], children: [Array] } },
+  oNode:
+   { index: 1,
+     child: { tag: 'div', props: [Object], children: [Array] } } }
+node:
+{ tag: 'div', props: { key: 1 }, children: [ '1' ] }
+
+  16 passed
+  1 failed
+
+  move-keyed › should properly move keyed nodes
+
+  /mnt/data/Work/github/andyrj/idiom/test/move-keyed.test.js:42
+
+   41:   t.is(children.length, 5);
+   42:   t.is(children[0].firstChild.nodeValue, "4");
+   43:   t.is(children[1].firstChild.nodeValue, "1");
+
+  Difference:
+
+  - '0'
+  + '4'
+
+  Test.fn (test/move-keyed.test.js:42:5)
+  processEmit [as emit] (node_modules/nyc/node_modules/signal-exit/index.js:155:32)
+  processEmit [as emit] (node_modules/nyc/node_modules/signal-exit/index.js:155:32)
+----------|----------|----------|----------|----------|----------------|
+File      |  % Stmts | % Branch |  % Funcs |  % Lines |Uncovered Lines |
+----------|----------|----------|----------|----------|----------------|
+All files |      100 |    97.22 |      100 |      100 |                |
+ h.js     |      100 |      100 |      100 |      100 |                |
+ patch.js |      100 |    97.22 |      100 |      100 |         33,199 |
+----------|----------|----------|----------|----------|----------------|
