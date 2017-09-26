@@ -74,7 +74,7 @@ function unkeyed(parent, oldNodes, nodes) {
       parent.appendChild(createElement(nodes[i]));
       i++;
     }
-  } else if (i === nodes.length) {
+  } else {
     while (i < oldNodes.length) {
       parent.removeChild(parent.childNodes[i]);
       i++;
@@ -82,11 +82,29 @@ function unkeyed(parent, oldNodes, nodes) {
   }
 }
 
-function diffAndMove(parent, oldNodes, nodes) {}
+function diffAndMove(parent, oldNodes, nodes, addedKeys) {
+  const nodeMap = {};
+  oldNodes.forEach((child, index) => {
+    const key = child.props.key;
+    nodeMap[key] = { oNode: { index, child } };
+  });
+  nodes.forEach((child, index) => {
+    const key = child.props.key;
+    if (addedKeys.indexOf(key) === -1) {
+      if (nodeMap[key].oNode.index !== index) {
+        // figure out how to move nodes correctly...
+        console.log(oldNodes, nodes);
+        console.log(nodeMap[key].index, index);
+      }
+      patch(parent, parent.childNodes[index], nodeMap[key].oNode, child);
+    }
+  });
+}
 
 function keyed(parent, oldNodes, nodes) {
   const nodeMap = {};
   const cOldNodes = oldNodes.slice(0);
+  const addedKeys = [];
   oldNodes.forEach((child, index) => {
     const key = child.props.key;
     nodeMap[key] = { oNode: { index, child } };
@@ -96,6 +114,7 @@ function keyed(parent, oldNodes, nodes) {
     if (nodeMap[key] !== undefined) {
       nodeMap[key].nNode = { index, child };
     } else {
+      addedKeys.push(child.props.key);
       // add node from dom
       if (index < cOldNodes.length) {
         cOldNodes.splice(index, 0, child);
@@ -117,7 +136,7 @@ function keyed(parent, oldNodes, nodes) {
       delta--;
     }
   });
-  diffAndMove(parent, c1OldNodes, nodes);
+  diffAndMove(parent, c1OldNodes, nodes, addedKeys);
 }
 
 function diffChildren(parent, oldNodes, nodes) {
@@ -146,7 +165,7 @@ function diffChildren(parent, oldNodes, nodes) {
 }
 
 export function patch(parent, element, oldNode, node) {
-  if (oldNode == null && node != null) {
+  if (element == null && oldNode == null && node != null) {
     // create new element and add to parent...
     element = parent.insertBefore(createElement(node), element);
   } else if (element != null && oldNode != null && node != null) {

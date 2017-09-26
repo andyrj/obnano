@@ -8,7 +8,6 @@ test.beforeEach(() => {
   document.body = document.createElement("body");
 });
 
-/*
 test("keyed nodes should diff correctly", t => {
   const c1 = [
     h("div", {key: 0}, ["0"]),
@@ -37,4 +36,3 @@ test("keyed nodes should diff correctly", t => {
   t.is(children[3].firstChild.nodeValue, "1");
   t.is(children[4].firstChild.nodeValue, "0");
 });
-*/
