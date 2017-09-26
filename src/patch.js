@@ -82,52 +82,43 @@ function unkeyed(parent, oldNodes, nodes) {
   }
 }
 
-/* eslint-disable */
+function diffAndMove(parent, oldNodes, nodes) {}
+
 function keyed(parent, oldNodes, nodes) {
   const nodeMap = {};
-  const moveDiffKeys = [];
-  const removeNodes = [];
-  const addNodes = [];
-
-  // cOldNodes for debug purposes only...
-  //const cOldNodes = oldNodes.slice(0);
-  nodes.forEach((child, index) => {
-    const key = child.props.key;
-    nodeMap[key] = { nNode: { index, child } };
-  });
+  const cOldNodes = oldNodes.slice(0);
   oldNodes.forEach((child, index) => {
     const key = child.props.key;
+    nodeMap[key] = { oNode: { index, child } };
+  });
+  nodes.forEach((child, index) => {
+    const key = child.props.key;
     if (nodeMap[key] !== undefined) {
-      nodeMap[key].oNode = { index, child };
+      nodeMap[key].nNode = { index, child };
     } else {
-      // remove node from dom
-      //cOldNodes.splice(index, 1);
-      parent.removeChild(parent.childNodes[index]);
-    }
-  })
-
-  const nodesLen = nodes.length;
-  let delta = 0;
-  for (let i = 0; i < nodesLen; i++) {
-    const key = nodes[i].props.key;
-    if (nodeMap[key].oNode === undefined) {
-      // add node to dom
-      const newDomNode = createElement(nodes[i]);
-      if (i < nodes.length) {
-        //cOldNodes.splice(i, 0, node);
-        parent.insertBefore(newDomNode, parent.childNodes[i + delta]);
+      // add node from dom
+      if (index < cOldNodes.length) {
+        cOldNodes.splice(index, 0, child);
+        parent.insertBefore(createElement(child), parent.childNodes[index]);
       } else {
-        //cOldNodes.push(node);
-        parent.appendChild(newDomNode);
+        cOldNodes.push(child);
+        parent.appendChild(createElement(child));
       }
-      delta++;
-    } else {
-      // move and diff case....
-      
     }
-  }
+  });
+
+  const c1OldNodes = cOldNodes.slice(0);
+  let delta = 0;
+  cOldNodes.forEach((node, index) => {
+    const key = node.props.key;
+    if (nodeMap[key] && nodeMap[key].nNode === undefined) {
+      c1OldNodes.splice(index + delta, 1);
+      parent.removeChild(parent.childNodes[index + delta]);
+      delta--;
+    }
+  });
+  diffAndMove(parent, c1OldNodes, nodes);
 }
-/* eslint-enable */
 
 function diffChildren(parent, oldNodes, nodes) {
   if (oldNodes.length === 0 && nodes.length > 0) {
