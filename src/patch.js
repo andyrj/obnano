@@ -3,11 +3,13 @@
 function diffAttributes(element, oldProps, newProps) {
   const oldPropKeys = Object.keys(oldProps);
   const newPropKeys = Object.keys(newProps);
+  let i = 0;
   if (newPropKeys.length === 0) {
-    oldPropKeys.forEach(key => setData(element, key));
+    for (; i < oldPropKeys.length; i++) {
+      setData(element, oldPropKeys[i]);
+    }
   } else {
     const map = {};
-    let i = 0;
     for (; i < newPropKeys.length; i++) {
       const key = newPropKeys[i];
       map[key] = 1;
@@ -52,13 +54,21 @@ function createElement(node) {
         node.props.oncreate(element);
       });
     }*/
-    Object.keys(node.props).forEach(key => {
-      setData(element, key, node.props[key]);
-    });
+    const props = node.props;
+    const propKeys = Object.keys(props);
+    const propsLen = propKeys.length;
+    let i = 0;
+    for (; i < propsLen; i++) {
+      const key = propKeys[i];
+      setData(element, key, props[key]);
+    }
 
-    node.children.forEach(child => {
-      element.appendChild(createElement(child));
-    });
+    const children = node.children;
+    const childLen = children.length;
+    i = 0;
+    for (; i < childLen; i++) {
+      element.appendChild(createElement(children[i]));
+    }
     return element;
   }
 }
