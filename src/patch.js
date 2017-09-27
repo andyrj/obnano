@@ -1,21 +1,25 @@
 // from hyperapp patch...
 //const invoke = [];
-
 function diffAttributes(element, oldProps, newProps) {
-  const oldPropKeys = Object.keys(oldProps).sort();
-  const newPropKeys = Object.keys(newProps).sort();
+  const oldPropKeys = Object.keys(oldProps);
+  const newPropKeys = Object.keys(newProps);
   if (newPropKeys.length === 0) {
     oldPropKeys.forEach(key => setData(element, key));
   } else {
-    // TODO: refactor, don't do indexOf inside loop...
-    oldPropKeys.forEach(key => {
-      if (newPropKeys.indexOf(key) === -1) {
+    const map = {};
+    let i = 0;
+    for (; i < newPropKeys.length; i++) {
+      const key = newPropKeys[i];
+      map[key] = 1;
+      setData(element, key, newProps[key]);
+    }
+    i = 0;
+    for (; i < oldPropKeys.length; i++) {
+      const key = oldPropKeys[i];
+      if (map[key] === undefined) {
         setData(element, key);
       }
-    });
-    newPropKeys.forEach(key => {
-      setData(element, key, newProps[key]);
-    });
+    }
   }
 }
 
