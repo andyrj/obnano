@@ -188,9 +188,11 @@ function keyed(parent, oldNodes, nodes) {
 
 function diffChildren(parent, oldNodes, nodes) {
   if (oldNodes.length === 0 && nodes.length > 0) {
-    nodes.forEach(child => {
-      parent.appendChild(createElement(child));
-    });
+    let i = 0;
+    const nodesLen = nodes.length;
+    for (; i < nodesLen; i++) {
+      parent.appendChild(createElement(nodes[i]));
+    }
   } else if (oldNodes.length > 0 && nodes.length === 0) {
     while (parent.lastChild) {
       parent.removeChild(parent.lastChild);
