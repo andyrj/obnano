@@ -168,3 +168,9 @@ test("keyed with duplicates should throw RangeError", t => {
   const node1 = h("div", {}, e1);
   t.throws(() => patch(document.body, document.body.firstChild, node, node1));
 });
+
+test("lifecycle functions should not end up in dom", t => {
+  const node = h("div", { oncreate: () => {}}, []);
+  patch(document.body, null, null, node);
+  t.is(document.body.firstChild.attributes.length, 0);
+});

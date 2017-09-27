@@ -7,13 +7,11 @@ function diffAttributes(element, oldProps, newProps) {
   if (newPropKeys.length === 0) {
     oldPropKeys.forEach(key => setData(element, key));
   } else {
-    // remove props in old not found in new
     oldPropKeys.forEach(key => {
       if (newPropKeys.indexOf(key) === -1) {
         setData(element, key);
       }
     });
-    // add/update new props
     newPropKeys.forEach(key => {
       setData(element, key, newProps[key]);
     });
@@ -21,10 +19,8 @@ function diffAttributes(element, oldProps, newProps) {
 }
 
 function setData(element, key, value) {
-  // ignoring keyed nodes for this draft...
-  // not supporting inline styles in this draft...
   if (key === "key") {
-    return; // short circuit keyed node case...
+    return;
   }
   try {
     element[key] = value;
@@ -83,13 +79,12 @@ function unkeyed(parent, oldNodes, nodes) {
 }
 
 function removalsComparator(a, b) {
+  // no return 0 case, as duplicate keys can't happen...
   if (a.index < b.index) {
     return -1;
-  } else if (a.index > b.index) {
+  } else {
     return 1;
-  } /*else { // not possible to have duplicate keys...
-    throw new RangeError("Error: duplicate keys encountered");
-  }*/
+  }
 }
 
 /* eslint-disable */
@@ -113,17 +108,14 @@ function keyed(parent, oldNodes, nodes) {
       moveMap[key].oNode = { index, child };
       delete addMap[key];
     } else {
-      // remove node from dom and cOldNodes
       cOldNodes.splice(index + delta, 1);
       parent.removeChild(parent.childNodes[index + delta]);
       delta--;
     }
   });
-  // very small loop over keys in addMap to remove them from moveMap...
   Object.keys(addMap).forEach(key => {
     delete moveMap[key];
   });
-  // cheap iteration over nodes adding keys found in addMap...
   let nodesLen = nodes.length;
   let i = 0;
   for(; i < nodesLen; i++) {
@@ -138,36 +130,29 @@ function keyed(parent, oldNodes, nodes) {
       }
     }
   }
-  // update nodeMap oNode index has been changed by add and remove above and needs to be refreshed...
   cOldNodes.forEach((old, index) => {
     const key = old.props.key;
     if (moveMap[key] && moveMap[key].oNode.index !== index) {
       moveMap[key].oNode.index = index;
     }
   });
-  // now cOldNodes and moveMap mirror what is in dom, and all we have left are move and in-place diffs...
-  // which are easiest handled by simply looping twice, first remove any keys in moveMap for oNode.index !== nNode.index,
-  // and patching for others, then second loop test for key in removeMap and put in correct position...
   const removals = [];
-  i = 0; // reset index
+  i = 0;
   for(; i < cOldNodes.length; i++) {
     const key = cOldNodes[i].props.key;
     if (moveMap[key] !== undefined) {
       const move = moveMap[key];
 
-      // diff in place...
       const temp = parent.childNodes[i];
       patch(parent, temp, move.oNode.child, move.nNode.child);
       if (move.oNode.index !== move.nNode.index) {
-        // move node...
         parent.removeChild(temp);
         removals.push({ index: move.nNode.index, el: temp, node: cOldNodes[i] });
         cOldNodes.splice(i, 1);
-        i--; // we are mutating the clone of oldNodes....
+        i--;
       }
     }
   }
-  // reset index and loop over nodes placing into dom at correct position...
   i = 0;
   delta = 0;
   const sortedRemovals = removals.sort(removalsComparator);
@@ -187,12 +172,10 @@ function keyed(parent, oldNodes, nodes) {
 
 function diffChildren(parent, oldNodes, nodes) {
   if (oldNodes.length === 0 && nodes.length > 0) {
-    // short circuit for no children -> children
     nodes.forEach(child => {
       parent.appendChild(createElement(child));
     });
   } else if (oldNodes.length > 0 && nodes.length === 0) {
-    // short circuit for children -> no children
     while (parent.lastChild) {
       parent.removeChild(parent.lastChild);
     }
@@ -211,26 +194,22 @@ function diffChildren(parent, oldNodes, nodes) {
 }
 
 export function patch(parent, element, oldNode, node) {
-  if (element == null && oldNode == null && node != null) {
-    // create new element and add to parent...
+  if (oldNode == null && node != null) {
     element = parent.insertBefore(createElement(node), element);
-  } else if (element != null && oldNode != null && node != null) {
+  } else if (oldNode != null && node != null) {
     if (oldNode === node) {
-      return element; // short circuit for memoized vnode
+      return element;
     } else if (typeof oldNode === "string" && typeof node === "string") {
-      element.nodeValue = node; // short cut for upating textNode
+      element.nodeValue = node;
     } else if (oldNode.tag && node.tag && oldNode.tag === node.tag) {
-      // diff attributes
       diffAttributes(element, oldNode.props, node.props);
-      // diff children if either oldNode or node have children
       if (oldNode.children.length > 0 || node.children.length > 0) {
         diffChildren(element, oldNode.children, node.children);
       }
     } else {
-      // replace oldNode with node in dom...
       parent.replaceChild(createElement(node), element);
     }
-  } else if (element != null && oldNode != null && node == null) {
+  } else if (oldNode != null && node == null) {
     /* lifecycle onremove from hyperapp
     if (oldNode.props && oldNode.props.onremove) {
       globalInvokeLaterStack.push(oldNode.props.onremove(element));
