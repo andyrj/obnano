@@ -87,9 +87,9 @@ function removalsComparator(a, b) {
     return -1;
   } else if (a.index > b.index) {
     return 1;
-  } else {
-    return 0;
-  }
+  } /*else { // not possible to have duplicate keys...
+    throw new RangeError("Error: duplicate keys encountered");
+  }*/
 }
 
 /* eslint-disable */
@@ -99,6 +99,9 @@ function keyed(parent, oldNodes, nodes) {
   const cOldNodes = oldNodes.slice(0);
   nodes.forEach((child, index) => {
     const key = child.props.key;
+    if (moveMap[key] !== undefined) {
+      throw new RangeError("Error: duplicate keys encountered");
+    }
     moveMap[key] = { nNode: { index, child } };
     addMap[key] = {index, child};
   });
@@ -145,27 +148,22 @@ function keyed(parent, oldNodes, nodes) {
   // now cOldNodes and moveMap mirror what is in dom, and all we have left are move and in-place diffs...
   // which are easiest handled by simply looping twice, first remove any keys in moveMap for oNode.index !== nNode.index,
   // and patching for others, then second loop test for key in removeMap and put in correct position...
-  console.log("cOldNodes pre-removal:");
-  console.log(cOldNodes);
   const removals = [];
-  let cOldNodesLen = cOldNodes.length;
-  i = 0; // reset index and delta...
-  delta = 0;
-  for(; i < cOldNodesLen + delta; i++) {
-    const key = cOldNodes[i + delta].props.key;
+  i = 0; // reset index
+  for(; i < cOldNodes.length; i++) {
+    const key = cOldNodes[i].props.key;
     if (moveMap[key] !== undefined) {
       const move = moveMap[key];
 
       // diff in place...
-      const temp = parent.childNodes[i + delta];
+      const temp = parent.childNodes[i];
       patch(parent, temp, move.oNode.child, move.nNode.child);
       if (move.oNode.index !== move.nNode.index) {
         // move node...
         parent.removeChild(temp);
-        console.log(i, move.nNode.index, move.oNode.index);
-        removals.push({ index: move.nNode.index, el: temp, node: cOldNodes[i + delta] });
-        cOldNodes.splice(i + delta, 1);
-        delta--;
+        removals.push({ index: move.nNode.index, el: temp, node: cOldNodes[i] });
+        cOldNodes.splice(i, 1);
+        i--; // we are mutating the clone of oldNodes....
       }
     }
   }
@@ -173,26 +171,17 @@ function keyed(parent, oldNodes, nodes) {
   i = 0;
   delta = 0;
   const sortedRemovals = removals.sort(removalsComparator);
-  //console.log("sortedRemovals: ");
-  //console.log(sortedRemovals);
-  console.log("pre-move cOldNodes: ");
-  console.log(cOldNodes);
   for(; i < removals.length; i++) {
     const removal = removals[i];
     if (removal.index >= cOldNodes.length) {
       cOldNodes.push(removal.node);
       parent.appendChild(removal.el);
     } else {
-      const domEl = parent.childNodes[removal.index - delta];
-      cOldNodes.splice(removal.index - delta, 0, removal.node);
+      const domEl = parent.childNodes[removal.index];
+      cOldNodes.splice(removal.index, 0, removal.node);
       parent.insertBefore(removal.el, domEl);
     }
-    delta++;
   }
-  console.log("cOldNodes: ");
-  console.log(cOldNodes);
-  console.log("nodes: ");
-  console.log(nodes);
 }
 /* eslint-enable */
 

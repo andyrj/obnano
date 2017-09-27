@@ -153,3 +153,18 @@ test("null keys should still be handled as un-keyed", t => {
   t.is(document.body.firstChild.lastChild.nodeName, "DIV");
   t.is(document.body.firstChild.lastChild.firstChild.nodeValue, str);
 });
+
+test("keyed with duplicates should throw RangeError", t => {
+  const c1 = [
+    h("div", {key: 0}, ["0"]),
+    h("div", {key: 1}, ["1"])
+  ];
+  const node = h("div", {}, c1);
+  patch(document.body, null, null, node);
+  const e1 = [
+    h("div", {key: 0}, ["0"]),
+    h("div", {key: 0}, ["Error"])
+  ];
+  const node1 = h("div", {}, e1);
+  t.throws(() => patch(document.body, document.body.firstChild, node, node1));
+});

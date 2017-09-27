@@ -9,7 +9,6 @@ test.beforeEach(() => {
 });
 
 test("should properly move keyed nodes", t => {
-  console.log("starting move-keyed");
   const c1 = [
     h("div", {key: 0}, ["0"]),
     h("div", {key: 1}, ["1"]),
