@@ -174,3 +174,7 @@ test("lifecycle functions should not end up in dom", t => {
   patch(document.body, null, null, node);
   t.is(document.body.firstChild.attributes.length, 0);
 });
+
+test("patch call with oldNode and node both null throws", t => {
+  t.throws(() => patch(document.body, null, null, null));
+});

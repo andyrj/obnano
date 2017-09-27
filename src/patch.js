@@ -194,7 +194,9 @@ function diffChildren(parent, oldNodes, nodes) {
 }
 
 export function patch(parent, element, oldNode, node) {
-  if (oldNode == null && node != null) {
+  if (oldNode == null && node == null) {
+    throw new RangeError("oldNode and node cannot both be null"); // pointless call to patch...
+  } else if (oldNode == null && node != null) {
     element = parent.insertBefore(createElement(node), element);
   } else if (oldNode != null && node != null) {
     if (oldNode === node) {
@@ -209,7 +211,8 @@ export function patch(parent, element, oldNode, node) {
     } else {
       parent.replaceChild(createElement(node), element);
     }
-  } else if (oldNode != null && node == null) {
+  } else {
+    /* if (oldNode != null && node == null) { */
     /* lifecycle onremove from hyperapp
     if (oldNode.props && oldNode.props.onremove) {
       globalInvokeLaterStack.push(oldNode.props.onremove(element));
