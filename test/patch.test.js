@@ -178,3 +178,14 @@ test("lifecycle functions should not end up in dom", t => {
 test("patch call with oldNode and node both null throws", t => {
   t.throws(() => patch(document.body, null, null, null));
 });
+
+/*
+test("lifecycle methods should work", t => {
+  let create = 0;
+  let update = 0;
+  let remove = 0;
+  const node = h("div", { oncreate: () => {create++}}, []);
+  patch(document.body, null, null, node);
+  t.is(create, 1);
+});
+*/

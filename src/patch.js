@@ -1,12 +1,13 @@
 // from hyperapp patch...
-//const globalInvokeLaterStack = [];
+//const invoke = [];
 
 function diffAttributes(element, oldProps, newProps) {
-  const oldPropKeys = Object.keys(oldProps);
-  const newPropKeys = Object.keys(newProps);
+  const oldPropKeys = Object.keys(oldProps).sort();
+  const newPropKeys = Object.keys(newProps).sort();
   if (newPropKeys.length === 0) {
     oldPropKeys.forEach(key => setData(element, key));
   } else {
+    // TODO: refactor, don't do indexOf inside loop...
     oldPropKeys.forEach(key => {
       if (newPropKeys.indexOf(key) === -1) {
         setData(element, key);
@@ -41,13 +42,12 @@ function createElement(node) {
   } else {
     // not surpporting svg in this draft...
     const element = document.createElement(node.tag);
-    /* life cycle oncreate from hyperapp
+    /*
     if (node.props && node.props.oncreate) {
-      globalInvokeLaterStack.push(function() {
+      invoke.push(function() {
         node.props.oncreate(element);
       });
-    }
-    */
+    }*/
     Object.keys(node.props).forEach(key => {
       setData(element, key, node.props[key]);
     });
@@ -88,6 +88,7 @@ function removalsComparator(a, b) {
 }
 
 /* eslint-disable */
+// TODO: need to refactor this into smaller functions...
 function keyed(parent, oldNodes, nodes) {
   const addMap = {};
   const moveMap = {};
@@ -194,6 +195,13 @@ function diffChildren(parent, oldNodes, nodes) {
   }
 }
 
+function updateElement(element, oldProps, props) {
+  /*if (props && props.onupdate) {
+    invoke.push(props.onupdate(element, oldProps));
+  }*/
+  diffAttributes(element, oldProps, props);
+}
+
 export function patch(parent, element, oldNode, node) {
   if (oldNode == null && node == null) {
     throw new RangeError("oldNode and node cannot both be null"); // pointless call to patch...
@@ -205,7 +213,7 @@ export function patch(parent, element, oldNode, node) {
     } else if (typeof oldNode === "string" && typeof node === "string") {
       element.nodeValue = node;
     } else if (oldNode.tag && node.tag && oldNode.tag === node.tag) {
-      diffAttributes(element, oldNode.props, node.props);
+      updateElement(element, oldNode.props, node.props);
       if (oldNode.children.length > 0 || node.children.length > 0) {
         diffChildren(element, oldNode.children, node.children);
       }
@@ -213,12 +221,10 @@ export function patch(parent, element, oldNode, node) {
       parent.replaceChild(createElement(node), element);
     }
   } else {
-    /* if (oldNode != null && node == null) { */
-    /* lifecycle onremove from hyperapp
+    /* decide how you are going to hook into lifecycle...  need render()?
     if (oldNode.props && oldNode.props.onremove) {
-      globalInvokeLaterStack.push(oldNode.props.onremove(element));
-    }
-    */
+      invoke.push(oldNode.props.onremove(element));
+    }*/
     parent.removeChild(element);
   }
   return element;
