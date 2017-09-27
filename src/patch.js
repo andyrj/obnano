@@ -107,14 +107,18 @@ function keyed(parent, oldNodes, nodes) {
   const addMap = {};
   const moveMap = {};
   const cOldNodes = oldNodes.slice(0);
-  nodes.forEach((child, index) => {
+  let i = 0;
+  const nodesLen = nodes.length;
+  for(; i < nodesLen; i++) {
+    const child = nodes[i];
     const key = child.props.key;
     if (moveMap[key] !== undefined) {
       throw new RangeError("Error: duplicate keys encountered");
     }
-    moveMap[key] = { nNode: { index, child } };
-    addMap[key] = {index, child};
-  });
+    const nodeEntry = { index: i, child };
+    moveMap[key] = { nNode: nodeEntry };
+    addMap[key] = nodeEntry;
+  }
   let delta = 0;
   let moveOrDiff = 0;
   oldNodes.forEach((child, index) => {
@@ -131,8 +135,7 @@ function keyed(parent, oldNodes, nodes) {
   Object.keys(addMap).forEach(key => {
     delete moveMap[key];
   });
-  let nodesLen = nodes.length;
-  let i = 0;
+  i = 0;
   for(; i < nodesLen; i++) {
     const key = nodes[i].props.key;
     if (addMap[key] !== undefined) {
