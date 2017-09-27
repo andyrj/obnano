@@ -121,20 +121,26 @@ function keyed(parent, oldNodes, nodes) {
   }
   let delta = 0;
   let moveOrDiff = 0;
-  oldNodes.forEach((child, index) => {
+  const oldNodesLen = oldNodes.length;
+  i = 0;
+  for (; i < oldNodesLen; i++) {
+    const child = oldNodes[i];
     const key = child.props.key;
     if (moveMap[key] !== undefined) {
-      moveMap[key].oNode = { index, child };
+      moveMap[key].oNode = { index: i, child };
       delete addMap[key];
     } else {
-      cOldNodes.splice(index + delta, 1);
-      parent.removeChild(parent.childNodes[index + delta]);
+      cOldNodes.splice(i + delta, 1);
+      parent.removeChild(parent.childNodes[i + delta]);
       delta--;
     }
-  });
-  Object.keys(addMap).forEach(key => {
-    delete moveMap[key];
-  });
+  }
+  const addMapKeys = Object.keys(addMap);
+  const addMapLen = addMapKeys.length;
+  i = 0;
+  for (; i < addMapLen; i++) {
+    delete moveMap[addMapKeys[i]];
+  }
   i = 0;
   for(; i < nodesLen; i++) {
     const key = nodes[i].props.key;
@@ -148,19 +154,21 @@ function keyed(parent, oldNodes, nodes) {
       }
     }
   }
-  cOldNodes.forEach((old, index) => {
+  const cOldNodesLen = cOldNodes.length;
+  i = 0;
+  for (; i < cOldNodesLen; i++) {
+    const old = cOldNodes[i];
     const key = old.props.key;
-    if (moveMap[key] && moveMap[key].oNode.index !== index) {
-      moveMap[key].oNode.index = index;
+    if (moveMap[key] && moveMap[key].oNode.index !== i) {
+      moveMap[key].oNode.index = i;
     }
-  });
+  }
   const removals = [];
   i = 0;
   for(; i < cOldNodes.length; i++) {
     const key = cOldNodes[i].props.key;
     if (moveMap[key] !== undefined) {
       const move = moveMap[key];
-
       const temp = parent.childNodes[i];
       patch(parent, temp, move.oNode.child, move.nNode.child);
       if (move.oNode.index !== move.nNode.index) {
