@@ -2,8 +2,8 @@
 //const globalInvokeLaterStack = [];
 
 function diffAttributes(element, oldProps, newProps) {
-  const oldPropKeys = Object.keys(oldProps).filter(name => name !== "key");
-  const newPropKeys = Object.keys(newProps).filter(name => name !== "key");
+  const oldPropKeys = Object.keys(oldProps);
+  const newPropKeys = Object.keys(newProps);
   if (newPropKeys.length === 0) {
     oldPropKeys.forEach(key => setData(element, key));
   } else {
