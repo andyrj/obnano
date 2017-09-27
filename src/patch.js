@@ -156,8 +156,9 @@ function keyed(parent, oldNodes, nodes) {
   i = 0;
   delta = 0;
   const sortedRemovals = removals.sort(removalsComparator);
-  for(; i < removals.length; i++) {
-    const removal = removals[i];
+  const sortedRemovalsLen = sortedRemovals.length;
+  for(; i < sortedRemovalsLen; i++) {
+    const removal = sortedRemovals[i];
     if (removal.index >= cOldNodes.length) {
       cOldNodes.push(removal.node);
       parent.appendChild(removal.el);
