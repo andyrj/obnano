@@ -99,7 +99,6 @@ function keyed(parent, oldNodes, nodes) {
       moveMap[key].oNode = { index: i, child };
       delete addMap[key];
     } else {
-      //parent.removeChild(parent.childNodes[i + delta]);
       removeElement(parent, parent.childNodes[i + delta], child.props);
       cOldNodes.splice(i + delta, 1);
       delta--;
@@ -150,7 +149,6 @@ function keyed(parent, oldNodes, nodes) {
     }
   }
   i = 0;
-  delta = 0;
   const sortedRemovals = removals.sort(removalsComparator);
   const sortedRemovalsLen = sortedRemovals.length;
   for(; i < sortedRemovalsLen; i++) {
