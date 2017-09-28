@@ -195,8 +195,7 @@ function keyed(parent, oldNodes, nodes) {
   cleanMoveMap(addMap, moveMap);
   addKeyed(parent, addMap, nodes, nodesLen, cOldNodes);
   correctMoveMapIndices(moveMap, cOldNodes);
-  const removals = findRemovals(parent, cOldNodes, moveMap);
-  replaceRemovals(parent, cOldNodes, removals);
+  replaceRemovals(parent, cOldNodes, findRemovals(parent, cOldNodes, moveMap));
 }
 
 function diffChildren(parent, oldNodes, nodes) {
