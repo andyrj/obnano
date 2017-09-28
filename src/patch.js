@@ -42,37 +42,6 @@ function setData(element, key, value) {
   }
 }
 
-function createElement(node) {
-  if (typeof node === "string") {
-    return document.createTextNode(node);
-  } else {
-    // not surpporting svg in this draft...
-    const element = document.createElement(node.tag);
-    /*
-    if (node.props && node.props.oncreate) {
-      invoke.push(function() {
-        node.props.oncreate(element);
-      });
-    }*/
-    const props = node.props;
-    const propKeys = Object.keys(props);
-    const propsLen = propKeys.length;
-    let i = 0;
-    for (; i < propsLen; i++) {
-      const key = propKeys[i];
-      setData(element, key, props[key]);
-    }
-
-    const children = node.children;
-    const childLen = children.length;
-    i = 0;
-    for (; i < childLen; i++) {
-      element.appendChild(createElement(children[i]));
-    }
-    return element;
-  }
-}
-
 function unkeyed(parent, oldNodes, nodes) {
   let i = 0;
   while (i < oldNodes.length && i < nodes.length) {
@@ -130,8 +99,9 @@ function keyed(parent, oldNodes, nodes) {
       moveMap[key].oNode = { index: i, child };
       delete addMap[key];
     } else {
+      //parent.removeChild(parent.childNodes[i + delta]);
+      removeElement(parent, parent.childNodes[i + delta], child.props);
       cOldNodes.splice(i + delta, 1);
-      parent.removeChild(parent.childNodes[i + delta]);
       delta--;
     }
   }
@@ -222,11 +192,50 @@ function diffChildren(parent, oldNodes, nodes) {
   }
 }
 
+function createElement(node) {
+  if (typeof node === "string") {
+    return document.createTextNode(node);
+  } else {
+    // not surpporting svg in this draft...
+    const element = document.createElement(node.tag);
+    /*
+    if (node.props && node.props.oncreate) {
+      invoke.push(function() {
+        node.props.oncreate(element);
+      });
+    }*/
+    const props = node.props;
+    const propKeys = Object.keys(props);
+    const propsLen = propKeys.length;
+    let i = 0;
+    for (; i < propsLen; i++) {
+      const key = propKeys[i];
+      setData(element, key, props[key]);
+    }
+
+    const children = node.children;
+    const childLen = children.length;
+    i = 0;
+    for (; i < childLen; i++) {
+      element.appendChild(createElement(children[i]));
+    }
+    return element;
+  }
+}
+
 function updateElement(element, oldProps, props) {
   /*if (props && props.onupdate) {
     invoke.push(props.onupdate(element, oldProps));
   }*/
   diffAttributes(element, oldProps, props);
+}
+
+function removeElement(parent, element, props) {
+  /* decide how you are going to hook into lifecycle...  need render()?
+  if (props && props.onremove) {
+    invoke.push(props.onremove(element));
+  }*/
+  parent.removeChild(element);
 }
 
 export function patch(parent, element, oldNode, node) {
@@ -248,11 +257,7 @@ export function patch(parent, element, oldNode, node) {
       parent.replaceChild(createElement(node), element);
     }
   } else {
-    /* decide how you are going to hook into lifecycle...  need render()?
-    if (oldNode.props && oldNode.props.onremove) {
-      invoke.push(oldNode.props.onremove(element));
-    }*/
-    parent.removeChild(element);
+    removeElement(parent, element, oldNode.props);
   }
   return element;
 }
