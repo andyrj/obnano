@@ -70,15 +70,29 @@ function removalsComparator(a, b) {
   }
 }
 
-/* eslint-disable */
-// TODO: need to refactor this into smaller functions...
-function keyed(parent, oldNodes, nodes) {
-  const addMap = {};
-  const moveMap = {};
-  const cOldNodes = oldNodes.slice(0);
+// part of keyed algo...
+function replaceRemovals(parent, oldNodes, removals) {
   let i = 0;
-  const nodesLen = nodes.length;
-  for(; i < nodesLen; i++) {
+  const sortedRemovals = removals.sort(removalsComparator);
+  const sortedRemovalsLen = sortedRemovals.length;
+  for (; i < sortedRemovalsLen; i++) {
+    const removal = sortedRemovals[i];
+    if (removal.index >= oldNodes.length) {
+      oldNodes.push(removal.node);
+      parent.appendChild(removal.el);
+    } else {
+      const domEl = parent.childNodes[removal.index];
+      oldNodes.splice(removal.index, 0, removal.node);
+      parent.insertBefore(removal.el, domEl);
+    }
+  }
+}
+
+function initFromNodes(nodes, nodesLen) {
+  const moveMap = {};
+  const addMap = {};
+  let i = 0;
+  for (; i < nodesLen; i++) {
     const child = nodes[i];
     const key = child.props.key;
     if (moveMap[key] !== undefined) {
@@ -88,10 +102,14 @@ function keyed(parent, oldNodes, nodes) {
     moveMap[key] = { nNode: nodeEntry };
     addMap[key] = nodeEntry;
   }
+  return { moveMap, addMap };
+}
+
+function initKeyedCollections(parent, oldNodes, oldNodesLen, nodes, nodesLen) {
+  const { addMap, moveMap } = initFromNodes(nodes, nodesLen);
+  const cOldNodes = oldNodes.slice(0);
   let delta = 0;
-  let moveOrDiff = 0;
-  const oldNodesLen = oldNodes.length;
-  i = 0;
+  let i = 0;
   for (; i < oldNodesLen; i++) {
     const child = oldNodes[i];
     const key = child.props.key;
@@ -104,66 +122,82 @@ function keyed(parent, oldNodes, nodes) {
       delta--;
     }
   }
+  return { addMap, moveMap, cOldNodes };
+}
+
+function cleanMoveMap(addMap, moveMap) {
   const addMapKeys = Object.keys(addMap);
   const addMapLen = addMapKeys.length;
-  i = 0;
+  let i = 0;
   for (; i < addMapLen; i++) {
     delete moveMap[addMapKeys[i]];
   }
-  i = 0;
-  for(; i < nodesLen; i++) {
-    const key = nodes[i].props.key;
-    if (addMap[key] !== undefined) {
-      if (i < cOldNodes.length) {
-        cOldNodes.splice(i, 0, nodes[i]);
-        parent.insertBefore(createElement(nodes[i]), parent.childNodes[i]);
-      } else {
-        cOldNodes.push(nodes[i]);
-        parent.appendChild(createElement(nodes[i]));
-      }
-    }
-  }
-  const cOldNodesLen = cOldNodes.length;
-  i = 0;
-  for (; i < cOldNodesLen; i++) {
-    const old = cOldNodes[i];
-    const key = old.props.key;
-    if (moveMap[key] && moveMap[key].oNode.index !== i) {
-      moveMap[key].oNode.index = i;
-    }
-  }
+}
+
+function findRemovals(parent, oldNodes, moveMap) {
   const removals = [];
-  i = 0;
-  for(; i < cOldNodes.length; i++) {
-    const key = cOldNodes[i].props.key;
+  let i = 0;
+  for (; i < oldNodes.length; i++) {
+    const key = oldNodes[i].props.key;
     if (moveMap[key] !== undefined) {
       const move = moveMap[key];
       const temp = parent.childNodes[i];
       patch(parent, temp, move.oNode.child, move.nNode.child);
       if (move.oNode.index !== move.nNode.index) {
         parent.removeChild(temp);
-        removals.push({ index: move.nNode.index, el: temp, node: cOldNodes[i] });
-        cOldNodes.splice(i, 1);
+        removals.push({ index: move.nNode.index, el: temp, node: oldNodes[i] });
+        oldNodes.splice(i, 1);
         i--;
       }
     }
   }
-  i = 0;
-  const sortedRemovals = removals.sort(removalsComparator);
-  const sortedRemovalsLen = sortedRemovals.length;
-  for(; i < sortedRemovalsLen; i++) {
-    const removal = sortedRemovals[i];
-    if (removal.index >= cOldNodes.length) {
-      cOldNodes.push(removal.node);
-      parent.appendChild(removal.el);
-    } else {
-      const domEl = parent.childNodes[removal.index];
-      cOldNodes.splice(removal.index, 0, removal.node);
-      parent.insertBefore(removal.el, domEl);
+  return removals;
+}
+
+function addKeyed(parent, addMap, nodes, nodesLen, oldNodes) {
+  let i = 0;
+  for (; i < nodesLen; i++) {
+    const key = nodes[i].props.key;
+    if (addMap[key] !== undefined) {
+      if (i < oldNodes.length) {
+        oldNodes.splice(i, 0, nodes[i]);
+        parent.insertBefore(createElement(nodes[i]), parent.childNodes[i]);
+      } else {
+        oldNodes.push(nodes[i]);
+        parent.appendChild(createElement(nodes[i]));
+      }
     }
   }
 }
-/* eslint-enable */
+
+function correctMoveMapIndices(moveMap, oldNodes) {
+  let i = 0;
+  const oldNodesLen = oldNodes.length;
+  for (; i < oldNodesLen; i++) {
+    const old = oldNodes[i];
+    const key = old.props.key;
+    if (moveMap[key] && moveMap[key].oNode.index !== i) {
+      moveMap[key].oNode.index = i;
+    }
+  }
+}
+
+function keyed(parent, oldNodes, nodes) {
+  const nodesLen = nodes.length;
+  const oldNodesLen = oldNodes.length;
+  const { addMap, moveMap, cOldNodes } = initKeyedCollections(
+    parent,
+    oldNodes,
+    oldNodesLen,
+    nodes,
+    nodesLen
+  );
+  cleanMoveMap(addMap, moveMap);
+  addKeyed(parent, addMap, nodes, nodesLen, cOldNodes);
+  correctMoveMapIndices(moveMap, cOldNodes);
+  const removals = findRemovals(parent, cOldNodes, moveMap);
+  replaceRemovals(parent, cOldNodes, removals);
+}
 
 function diffChildren(parent, oldNodes, nodes) {
   if (oldNodes.length === 0 && nodes.length > 0) {
