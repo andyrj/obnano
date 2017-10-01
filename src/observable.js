@@ -16,18 +16,23 @@ export function Store(state /*, actions*/) {
     },
     set(target, name, value) {
       if (name in target) {
-        if (target[name].__observable === true && value.__observable !== true) {
-          if (target[name].__computed !== true) {
-            target[name](value);
+        if (target[name].__observable === true) {
+          if (value.__observable !== true) {
+            if (target[name].__computed !== true) {
+              target[name](value); // update observable value...
+            } else {
+              // replace observable with a new observable...
+              // I think we need to also update observers references remove the reference to this observable as well
+              target[name].dispose();
+              target[name] = value;
+            }
           } else {
-            // //overwrite a computed, with a vanilla unobserved var...
-            // target[name].getObserving().forEach(obs => {
-  
-            // });
+            // target[name] is observable
+            // value is observable
           }
         } else {
           if (target[name].__observable === true) {
-            // clean up for overwritten observable...
+            target[name].dispose();
           }
           target[name] = value;
         }
