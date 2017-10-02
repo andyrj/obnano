@@ -16,41 +16,55 @@ export function Store(state /*, actions*/) {
     },
     set(target, name, value) {
       if (name in target) {
-        if (target[name].__observable === true) {
-          if (value.__observable !== true) {
-            if (target[name].__computed !== true) {
-              target[name](value); // update observable value...
-            } else {
-              // replace observable with a new observable...
-              // I think we need to also update observers references remove the reference to this observable as well
-              target[name].dispose();
-              target[name] = value;
-            }
+        if (
+          target[name].__observable === true &&
+          target[name].__computed !== true
+        ) {
+          if (value.__observable === true) {
+            // just replace observable
+            target[name](value());
           } else {
-            // target[name] is observable
-            // value is observable
+            target[name](value);
           }
         } else {
-          if (target[name].__observable === true) {
+          if (
+            target[name].__observable === true ||
+            target[name].__computed === true
+          ) {
             target[name].dispose();
           }
-          target[name] = value;
+          if (typeof value === "function") {
+            target[name] = computed(value, proxy);
+          } else {
+            target[name] = value;
+          }
         }
       } else {
-        target[name] = value;
+        if (typeof value === "function") {
+          target[name] = computed(value, proxy);
+        } else {
+          target[name] = value;
+        }
       }
       return true;
-    } /*,
+    },
     deleteProperty(target, name) {
-      if (target[name].__observable === true) {
-
+      if (name in target) {
+        if (target[name].dispose !== undefined) {
+          target[name].dispose;
+        }
+        delete target[name];
+        return true;
+      } else {
+        return false;
       }
-    }*/
+    }
   };
   proxy = new Proxy(local, handler);
   Object.keys(state).forEach(key => {
     proxy[key] = state[key];
   });
+  proxy.__store = true;
   return proxy;
 }
 
@@ -68,7 +82,6 @@ export function observable(value) {
     }
   }
   data.__observable = true;
-  data.__computed = false;
   data.subscribe = function(observer) {
     if (observers.indexOf(observer) === -1) {
       observers.push(observer);
@@ -95,16 +108,22 @@ export function observable(value) {
 }
 
 export function computed(thunk, context) {
-  const current = observable(undefined);
+  let current = observable(undefined);
+  let disposed = false;
   const computation = function() {
-    const result = context != null ? thunk.call(context) : thunk();
-    current(result);
+    if (!disposed) {
+      const result = context != null ? thunk.call(context) : thunk();
+      current(result);
+    }
   };
-  const runner = autorun(computation);
+  let dispose = autorun(computation);
   function wrapper() {
     if (arguments.length > 0) {
       throw new RangeError("computed values cannot be set arbitrarily");
     } else {
+      if (disposed) {
+        return undefined;
+      }
       return current();
     }
   }
@@ -112,7 +131,10 @@ export function computed(thunk, context) {
   wrapper.__computed = true;
   wrapper.dispose = function() {
     current.dispose();
-    runner.dispose();
+    dispose();
+    dispose = undefined;
+    current = undefined;
+    disposed = true;
   };
   //wrapper.getObserving = runner.getObserving();
   Object.freeze(wrapper);
@@ -138,19 +160,18 @@ export function autorun(thunk) {
         observing.forEach(o => o.subscribe(this));
         stack.pop(this);
       }
-    },
-    /*getObserving: function() {
+    } /*,
+    getObserving: function() {
       return observing.slice(0);
     },
     setObserving: function(os) {
       observing = os;
       return true;
     },*/
-    dispose: function() {
-      // add code to clean up after autorun...
-      disposed = true;
-      observing.splice(0).forEach(o => o.unsubscribe(this));
-    }
   };
   reaction.run();
+  return function() {
+    disposed = true;
+    observing.splice(0).forEach(o => o.unsubscribe(this));
+  };
 }
