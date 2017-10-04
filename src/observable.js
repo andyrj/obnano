@@ -1,6 +1,6 @@
 const stack = [];
 
-export function Store(state /*, actions*/) {
+export function Store(state, actions) {
   const local = {};
   let proxy;
   const handler = {
@@ -64,8 +64,20 @@ export function Store(state /*, actions*/) {
   Object.keys(state).forEach(key => {
     proxy[key] = state[key];
   });
+  Object.keys(actions).forEach(key => {
+    proxy[key] = action(actions.key, proxy);
+  });
   proxy.__store = true;
   return proxy;
+}
+
+export function action(fn, context) {
+  return function() {
+    const args = arguments;
+    // do whatever to toggle transaction on
+    fn.apply(context, args);
+    // do whatever to toggle transaction off...
+  };
 }
 
 export function observable(value) {
@@ -80,7 +92,7 @@ export function observable(value) {
       value = arg;
       observers.forEach(o => o.run());
     }
-  }
+  };
   data.__observable = true;
   data.subscribe = function(observer) {
     if (observers.indexOf(observer) === -1) {
