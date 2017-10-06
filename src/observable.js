@@ -16,28 +16,18 @@ export function Store(state = {}, actions = {}) {
     },
     set(target, name, value) {
       if (name in target) {
-        if (
-          target[name].__observable === true &&
-          target[name].__computed !== true
-        ) {
+        if (target[name].__observable === true) {
           if (value.__observable === true) {
-            // just replace observable
+            // just replace observable value...
             target[name](value());
           } else {
             target[name](value);
           }
         } else {
-          if (
-            target[name].__observable === true ||
-            target[name].__computed === true
-          ) {
+          if (target[name].__computed === true) {
             target[name].dispose();
           }
-          if (typeof value === "function") {
-            target[name] = computed(value, proxy);
-          } else {
-            target[name] = value;
-          }
+          target[name] = value;
         }
       } else {
         if (typeof value === "function") {
