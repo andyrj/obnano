@@ -173,3 +173,11 @@ test("Store should handle actions being provided", t => {
   }});
   t.is(typeof store.increment, "function");
 });
+
+test("Store actions should be able to mutate state", t => {
+  const store = Store({count: 0}, {increment: function() {
+    this.count++;
+  }});
+  store.increment();
+  t.is(store.count, 1);
+});
