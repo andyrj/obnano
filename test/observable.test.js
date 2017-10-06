@@ -166,3 +166,10 @@ test("Store should dispose of and replace computed if user tries to set it", t =
   }
   t.is(store.fullName, "Andy Andy");
 });
+
+test("Store should handle actions being provided", t => {
+  const store = Store({count: 0}, {increment: function() {
+    this.count++;
+  }});
+  t.is(typeof store.increment, "function");
+});
