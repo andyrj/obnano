@@ -6,7 +6,7 @@ export function Store(state = {}, actions = {}) {
   const handler = {
     get(target, name) {
       if (name in target) {
-        if (target[name].__observable === true) {
+        if (target[name].__observable || target[name].__computed) {
           return target[name]();
         }
         return target[name];
@@ -17,8 +17,7 @@ export function Store(state = {}, actions = {}) {
     set(target, name, value) {
       if (name in target) {
         if (target[name].__observable === true) {
-          if (value.__observable === true) {
-            // just replace observable value...
+          if (value.__observable) {
             target[name](value());
           } else {
             target[name](value);
@@ -34,7 +33,11 @@ export function Store(state = {}, actions = {}) {
           if (value.__action === true) {
             target[name] = value;
           } else {
-            target[name] = computed(value, proxy);
+            if (!value.__observable) {
+              target[name] = computed(value, proxy);
+            } else {
+              target[name] = value;
+            }
           }
         } else {
           target[name] = value;
@@ -56,7 +59,12 @@ export function Store(state = {}, actions = {}) {
   };
   proxy = new Proxy(local, handler);
   Object.keys(state).forEach(key => {
-    proxy[key] = state[key];
+    if (typeof state[key] === "function" && !state[key].__observable) {
+      proxy[key] = computed(state[key], proxy);
+    } else {
+      //console.log(state, key, state[key]);
+      proxy[key] = state[key];
+    }
   });
   Object.keys(actions).forEach(key => {
     proxy[key] = action(actions[key], proxy);
@@ -135,7 +143,6 @@ export function computed(thunk, context) {
       return current();
     }
   }
-  wrapper.__observable = true;
   wrapper.__computed = true;
   wrapper.dispose = function() {
     current.dispose();

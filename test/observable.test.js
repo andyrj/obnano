@@ -101,7 +101,6 @@ test("Store should return undefined when trying to access key that has not been 
   t.is(store.test, undefined);
 });
 
-/*
 test("Store should replace observable transparently", t => {
   const store = Store({
     first: observable("Andy")
@@ -112,7 +111,6 @@ test("Store should replace observable transparently", t => {
   store.first = "boom";
   t.is(store.first, "boom");
 });
-*/
 
 test("Store should work with delete", t => {
   const store = Store({
@@ -163,9 +161,9 @@ test("Store should dispose of and replace computed if user tries to set it", t =
   });
 
   t.is(store.fullName, "Andy Johnson");
-  store.fullName = function() {
+  store.fullName = computed(function() {
     return `${this.first} ${this.first}`;
-  }
+  }, store);
   t.is(store.fullName, "Andy Andy");
 });
 
