@@ -12,6 +12,29 @@ test("observables should set a new value when called with an argument", t => {
   t.is(test(), "123");
 });
 
+test("observables referenced multiple times in a single computed should not duplicate the observations", t => {
+  const test = observable("test");
+  const comp = computed(() => {
+    return `${test()}: ${test()}`;
+  });
+  t.is(comp(), "test: test");
+  test("dupe");
+  t.is(comp(), "dupe: dupe");
+});
+
+test("observables should not allow duplicate observer subscription", t => {
+  let runs = 0;
+  const reaction = {
+    addDependency: () => {},
+    run: () => runs++
+  };
+  const test = observable("test");
+  test.subscribe(reaction);
+  test.subscribe(reaction);
+  test("update");
+  t.is(runs, 1);
+});
+
 test("autorun should execute when observables it accesses change", t => {
   let count = 0;
   const test = observable("test");
@@ -75,6 +98,12 @@ test("computed should stop and return only undefined after being disposed", t =>
   test("boom");
   t.is(count, 1);
   t.is(comp(), undefined);
+});
+
+test("Store should work with no parameters", t => {
+  const store = Store();
+  store.test = observable("Test");
+  t.is(store.test, "Test");
 });
 
 test("Store should allow observables to be accessed as though they are vanilla js objects", t => {

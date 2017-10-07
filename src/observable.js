@@ -127,10 +127,9 @@ export function computed(thunk, context) {
   let current = observable(undefined);
   let disposed = false;
   const computation = function() {
-    if (!disposed) {
-      const result = context != null ? thunk.call(context) : thunk();
-      current(result);
-    }
+    //if (disposed) return; // not needed?
+    const result = context != null ? thunk.call(context) : thunk();
+    current(result);
   };
   let dispose = autorun(computation);
   function wrapper() {
@@ -161,10 +160,8 @@ export function autorun(thunk) {
   let disposed = false;
   const reaction = {
     addDependency: function(obs) {
-      if (!disposed) {
-        if (observing.indexOf(obs) === -1) {
-          observing.push(obs);
-        }
+      if (observing.indexOf(obs) === -1) {
+        observing.push(obs);
       }
     },
     run: function() {
