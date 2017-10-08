@@ -82,10 +82,10 @@ export function action(fn, context) {
     actions--;
     if (actions === 0) {
       while (transaction.observables.length > 0) {
-        transaction.observables.pop()();
+        transaction.observables.shift()();
       }
       while (transaction.reactions.length > 0) {
-        transaction.reactions.pop().run();
+        transaction.reactions.shift().run();
       }
     }
   };

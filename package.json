@@ -14,8 +14,8 @@
     "dist"
   ],
   "scripts": {
-    "test": "ava --tap && nyc report --reporter=text-summary",
-    "test:html": "ava && nyc report --reporter=html",
+    "test": "ava --tap && nyc report --reporter=text-summary ava --tap",
+    "test:html": "nyc ava && nyc report --reporter=html",
     "build": "rollup --config rollup.config.prod.js",
     "build:dev": "rollup --config rollup.config.js",
     "prepublish": "npm run build && npm run test",

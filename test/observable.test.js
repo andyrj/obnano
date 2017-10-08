@@ -1,5 +1,5 @@
 import test from "ava";
-import { Store, observable, computed, autorun } from "../src/observable";
+import { Store, observable, computed, autorun, action } from "../src/observable";
 
 test("observables should return value when called with no argument", t => {
   const test = observable("test");
@@ -209,4 +209,65 @@ test("Store actions should be able to mutate state", t => {
   }});
   store.increment();
   t.is(store.count, 1);
+});
+
+test("actions should batch observable updates", t => {
+  const t1 = observable("Test1");
+  const t2 = observable("Test2");
+  const comp = computed(() => {
+    return `${t1()} ${t2()}`;
+  });
+  t.is(t1(), "Test1");
+  t.is(t2(), "Test2");
+  t.is(comp(), "Test1 Test2");
+  const act = action((one, two) => {
+    t1(one);
+    t2(two);
+  });
+  let count = 0;
+  autorun(() => {
+    count++;
+    let res = comp();
+  });
+  act("Test-1", "Test-2");
+  t.is(t1(), "Test-1");
+  t.is(t2(), "Test-2");
+  t.is(comp(), "Test-1 Test-2");
+  t.is(count, 2);
+  act("1", "2");
+  t.is(t1(), "1");
+  t.is(t2(), "2");
+  t.is(comp(), "1 2");
+  t.is(count, 3);
+});
+
+test("nested actions should only resolve after all actions finish", t => {
+  const t1 = observable("Test1");
+  const t2 = observable("Test2");
+  const comp = computed(() => {
+    return `${t1()} ${t2()}`;
+  });
+  const act2 = action(() => {
+    console.log("act 2 ran...")
+    t1("test-1");
+    t2("test-2");
+  });
+  const act1 = action((one, two) => {
+    t1(one);
+    t2(two);
+    act2();
+  });
+  t.is(t1(), "Test1");
+  t.is(t2(), "Test2");
+  t.is(comp(), "Test1 Test2");
+  let count = 0;
+  autorun(() => {
+    count++;
+    let res = comp();
+  });
+  act1("one", "two");
+  t.is(t1(), "test-1");
+  t.is(t2(), "test-2");
+  t.is(comp(), "test-1 test-2");
+  t.is(count, 2);
 });
