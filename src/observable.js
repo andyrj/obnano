@@ -1,4 +1,6 @@
 const stack = [];
+let actions = 0; // track nested actions to determine when to reconcile
+const transaction = { observables: [], reactions: [] };
 
 export function Store(state = {}, actions = {}) {
   const local = {};
@@ -62,7 +64,6 @@ export function Store(state = {}, actions = {}) {
     if (typeof state[key] === "function" && !state[key].__observable) {
       proxy[key] = computed(state[key], proxy);
     } else {
-      //console.log(state, key, state[key]);
       proxy[key] = state[key];
     }
   });
@@ -76,9 +77,17 @@ export function Store(state = {}, actions = {}) {
 export function action(fn, context) {
   const func = function() {
     const args = arguments;
-    // do whatever to toggle transaction on
+    actions++;
     fn.apply(context, args);
-    // do whatever to toggle transaction off...
+    actions--;
+    if (actions === 0) {
+      while (transaction.observables.length > 0) {
+        transaction.observables.pop()();
+      }
+      while (transaction.reactions.length > 0) {
+        transaction.reactions.pop().run();
+      }
+    }
   };
   func.__action = true;
   return func;
@@ -93,8 +102,19 @@ export function observable(value) {
       }
       return value;
     } else {
-      value = arg;
-      observers.forEach(o => o.run());
+      if (actions === 0) {
+        value = arg;
+        observers.forEach(o => o.run());
+      } else {
+        transaction.observables.push(() => {
+          value = arg;
+        });
+        observers.forEach(o => {
+          if (transaction.reactions.indexOf(o) === -1) {
+            transaction.reactions.push(o);
+          }
+        });
+      }
     }
   };
   data.__observable = true;
