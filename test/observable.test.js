@@ -1,0 +1,273 @@
+import test from "ava";
+import { Store, observable, computed, autorun, action } from "../src/observable";
+
+test("observables should return value when called with no argument", t => {
+  const test = observable("test");
+  t.is(test(), "test");
+});
+
+test("observables should set a new value when called with an argument", t => {
+  const test = observable("test");
+  test("123");
+  t.is(test(), "123");
+});
+
+test("observables referenced multiple times in a single computed should not duplicate the observations", t => {
+  const test = observable("test");
+  const comp = computed(() => {
+    return `${test()}: ${test()}`;
+  });
+  t.is(comp(), "test: test");
+  test("dupe");
+  t.is(comp(), "dupe: dupe");
+});
+
+test("observables should not allow duplicate observer subscription", t => {
+  let runs = 0;
+  const reaction = {
+    addDependency: () => {},
+    run: () => runs++
+  };
+  const test = observable("test");
+  test.subscribe(reaction);
+  test.subscribe(reaction);
+  test("update");
+  t.is(runs, 1);
+});
+
+test("autorun should execute when observables it accesses change", t => {
+  let count = 0;
+  const test = observable("test");
+  autorun(() => {
+    let val = test();
+    count++;
+  })
+  t.is(count, 1);
+  test("123");
+  t.is(count, 2);
+});
+
+test("autorun should stop executing after being disposed", t => {
+  let count = 0;
+  const test = observable("test");
+  const dispose = autorun(() => {
+    let val = test();
+    count++;
+  });
+  t.is(count, 1);
+  test("123");
+  t.is(count, 2);
+  dispose();
+  test("456");
+  t.is(count, 2);
+});
+
+test("computed values should update when dependencies update", t => {
+  const test = observable("test");
+  const test1 = observable("123");
+  const comp = computed(() => {
+    return `${test()} - ${test1()}`;
+  });
+  t.is(comp(), "test - 123");
+  test("boom");
+  t.is(comp(), "boom - 123");
+});
+
+test("computed value should throw if you try to set it's value externally", t => {
+  const test = observable("test");
+  const test1 = observable("123");
+  const comp = computed(() => {
+    return `${test()} - ${test1()}`;
+  });
+  t.throws(() => {
+    comp("error");
+  });
+});
+
+test("computed should stop and return only undefined after being disposed", t => {
+  let count = 0;
+  const test = observable("test");
+  const test1 = observable("123");
+  const comp = computed(() => {
+    count++;
+    return `${test()} - ${test1()}`;
+  });
+  t.is(count, 1);
+  t.is(comp(), "test - 123");
+  comp.dispose();
+  test("boom");
+  t.is(count, 1);
+  t.is(comp(), undefined);
+});
+
+test("Store should work with no parameters", t => {
+  const store = Store();
+  store.test = observable("Test");
+  t.is(store.test, "Test");
+});
+
+test("Store should allow observables to be accessed as though they are vanilla js objects", t => {
+  const store = Store({
+    first: observable("Andy"),
+    last: observable("Johnson")
+  });
+
+  t.is(store.first, "Andy");
+  t.is(store.last, "Johnson");
+});
+
+test("Store should allow unobserved data access and update like normal", t => {
+  const store = Store({
+    first: "Andy"
+  });
+  t.is(store.first, "Andy");
+  store.first = "test";
+  t.is(store.first, "test");
+});
+
+test("Store should return undefined when trying to access key that has not been set", t => {
+  const store = Store({});
+  t.is(store.test, undefined);
+});
+
+test("Store should replace observable transparently", t => {
+  const store = Store({
+    first: observable("Andy")
+  })
+  t.is(store.first, "Andy");
+  store.first = observable("Test");
+  t.is(store.first, "Test");
+  store.first = "boom";
+  t.is(store.first, "boom");
+});
+
+test("Store should work with delete", t => {
+  const store = Store({
+    first: observable("Andy"),
+    last: observable("Johnson"),
+    unob: "test"
+  });
+  t.is(store.first, "Andy");
+  t.is(store.last, "Johnson");
+  t.is(store.unob, "test");
+  delete store.last;
+  delete store.first;
+  delete store.unob;
+  t.is(store.first, undefined);
+  t.is(store.comp, undefined);
+  t.is(store.unob, undefined);
+});
+
+test("Store should throw if you try to delete non-existent key", t => {
+  const store = Store({});
+  t.throws(() => {
+    delete store.boom;
+  });
+});
+
+test("Store should allow updating observable and unobservable values transparently", t => {
+  const store = Store({
+    test: observable("test"),
+    unob: "123"
+  });
+  t.is(store.test, "test");
+  t.is(store.unob, "123");
+  store.test = observable("foobar");
+  t.is(store.test, "foobar");
+  store.test = "boom";
+  t.is(store.test, "boom");
+  store.unob = "456";
+  t.is(store.unob, "456");
+});
+
+test("Store should dispose of and replace computed if user tries to set it", t => {
+  const store = Store({
+    first: observable("Andy"),
+    last: observable("Johnson"),
+    fullName: function() {
+      return `${this.first} ${this.last}`
+    }
+  });
+
+  t.is(store.fullName, "Andy Johnson");
+  store.fullName = computed(function() {
+    return `${this.first} ${this.first}`;
+  }, store);
+  t.is(store.fullName, "Andy Andy");
+});
+
+test("Store should handle actions being provided", t => {
+  const store = Store({count: 0}, {increment: function() {
+    this.count++;
+  }});
+  t.is(typeof store.increment, "function");
+});
+
+test("Store actions should be able to mutate state", t => {
+  const store = Store({count: 0}, {increment: function() {
+    this.count++;
+  }});
+  store.increment();
+  t.is(store.count, 1);
+});
+
+test("actions should batch observable updates", t => {
+  const t1 = observable("Test1");
+  const t2 = observable("Test2");
+  const comp = computed(() => {
+    return `${t1()} ${t2()}`;
+  });
+  t.is(t1(), "Test1");
+  t.is(t2(), "Test2");
+  t.is(comp(), "Test1 Test2");
+  const act = action((one, two) => {
+    t1(one);
+    t2(two);
+  });
+  let count = 0;
+  autorun(() => {
+    count++;
+    let res = comp();
+  });
+  act("Test-1", "Test-2");
+  t.is(t1(), "Test-1");
+  t.is(t2(), "Test-2");
+  t.is(comp(), "Test-1 Test-2");
+  t.is(count, 2);
+  act("1", "2");
+  t.is(t1(), "1");
+  t.is(t2(), "2");
+  t.is(comp(), "1 2");
+  t.is(count, 3);
+});
+
+test("nested actions should only resolve after all actions finish", t => {
+  const t1 = observable("Test1");
+  const t2 = observable("Test2");
+  const comp = computed(() => {
+    return `${t1()} ${t2()}`;
+  });
+  const act2 = action(() => {
+    console.log("act 2 ran...")
+    t1("test-1");
+    t2("test-2");
+  });
+  const act1 = action((one, two) => {
+    t1(one);
+    t2(two);
+    act2();
+  });
+  t.is(t1(), "Test1");
+  t.is(t2(), "Test2");
+  t.is(comp(), "Test1 Test2");
+  let count = 0;
+  autorun(() => {
+    count++;
+    let res = comp();
+  });
+  act1("one", "two");
+  t.is(t1(), "test-1");
+  t.is(t2(), "test-2");
+  t.is(comp(), "test-1 test-2");
+  t.is(count, 2);
+});
