@@ -299,14 +299,13 @@ test("computeds that depend on other computed values should not output stale or 
   t.is(a, 1);
   t.is(b, 1);
   const act = action(() => {
+    count(1);
     first("John");
     last("Doe");
-    count(1);
   });
   act();
   t.is(fullName(), "John Doe");
   t.is(fullCount(), "John Doe: 1");
-  console.log(a, b);
   t.is(a, 2);
   t.is(b, 2);
 });
