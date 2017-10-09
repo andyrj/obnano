@@ -248,7 +248,6 @@ test("nested actions should only resolve after all actions finish", t => {
     return `${t1()} ${t2()}`;
   });
   const act2 = action(() => {
-    console.log("act 2 ran...")
     t1("test-1");
     t2("test-2");
   });
@@ -270,4 +269,44 @@ test("nested actions should only resolve after all actions finish", t => {
   t.is(t2(), "test-2");
   t.is(comp(), "test-1 test-2");
   t.is(count, 2);
+});
+
+test("computeds that depend on other computed values should not output stale or glitch", t => {
+  const count = observable(0);
+  const first = observable("Andy");
+  const last = observable("Johnson");
+  const fullName = computed(() => {
+    return `${first()} ${last()}`;
+  });
+  const fullCount = computed(() => {
+    return `${fullName()}: ${count()}`;
+  });
+  t.is(count(), 0);
+  t.is(first(), "Andy");
+  t.is(last(), "Johnson");
+  t.is(fullName(), "Andy Johnson");
+  t.is(fullCount(), "Andy Johnson: 0");
+  let a = 0;
+  autorun(() => {
+    a++;
+    let test1 = fullName();
+  });
+  let b = 0;
+  autorun(() => {
+    b++;
+    let test2 = fullCount(); 
+  });
+  t.is(a, 1);
+  t.is(b, 1);
+  const act = action(() => {
+    first("John");
+    last("Doe");
+    count(1);
+  });
+  act();
+  t.is(fullName(), "John Doe");
+  t.is(fullCount(), "John Doe: 1");
+  console.log(a, b);
+  t.is(a, 2);
+  t.is(b, 2);
 });

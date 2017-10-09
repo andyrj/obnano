@@ -1,6 +1,8 @@
 const stack = [];
 let actions = 0; // track nested actions to determine when to reconcile
-const transaction = { observables: [], reactions: [] };
+const MAX_DEPTH = 100;
+let depth = MAX_DEPTH;
+const transaction = { observable: [], computed: [], autorun: [] };
 
 export function Store(state = {}, actions = {}) {
   const local = {};
@@ -79,15 +81,32 @@ export function action(fn, context) {
     const args = arguments;
     actions++;
     fn.apply(context, args);
-    actions--;
-    if (actions === 0) {
-      while (transaction.observables.length > 0) {
-        transaction.observables.shift()();
+    if (actions === 1) {
+      while (
+        (transaction.observable.length > 0 ||
+          transaction.computed.length > 0 ||
+          transaction.autorun.length > 0) &&
+        depth > 0
+      ) {
+        while (transaction.observable.length > 0) {
+          transaction.observable.shift()();
+        }
+        while (transaction.computed.length > 0) {
+          transaction.computed.shift().run();
+        }
+        if (
+          transaction.computed.length === 0 &&
+          transaction.observable.length === 0
+        ) {
+          while (transaction.autorun.length > 0) {
+            transaction.autorun.shift().run();
+          }
+        }
+        depth--;
       }
-      while (transaction.reactions.length > 0) {
-        transaction.reactions.shift().run();
-      }
+      depth = MAX_DEPTH;
     }
+    actions--;
   };
   func.__action = true;
   return func;
@@ -106,12 +125,18 @@ export function observable(value) {
         value = arg;
         observers.forEach(o => o.run());
       } else {
-        transaction.observables.push(() => {
+        transaction.observable.push(() => {
           value = arg;
         });
         observers.forEach(o => {
-          if (transaction.reactions.indexOf(o) === -1) {
-            transaction.reactions.push(o);
+          if (o.__computed === true) {
+            if (transaction.computed.indexOf(o) === -1) {
+              transaction.computed.push(o);
+            }
+          } else {
+            if (transaction.autorun.indexOf(o) === -1) {
+              transaction.autorun.push(o);
+            }
           }
         });
       }
@@ -151,7 +176,7 @@ export function computed(thunk, context) {
     const result = context != null ? thunk.call(context) : thunk();
     current(result);
   };
-  let dispose = autorun(computation);
+  let dispose = autorun(computation, true);
   function wrapper() {
     if (arguments.length > 0) {
       throw new RangeError("computed values cannot be set arbitrarily");
@@ -175,7 +200,7 @@ export function computed(thunk, context) {
   return wrapper;
 }
 
-export function autorun(thunk) {
+export function autorun(thunk, computed = false) {
   let observing = []; // array of { store, name }
   let disposed = false;
   const reaction = {
@@ -192,7 +217,8 @@ export function autorun(thunk) {
         observing.forEach(o => o.subscribe(this));
         stack.pop(this);
       }
-    } /*,
+    },
+    __computed: computed /*,
     getObserving: function() {
       return observing.slice(0);
     },
