@@ -109,7 +109,7 @@ function compare(a, b) {
       a === null
     ) {
       return a === b;
-    } else { // compare objects...
+    } else {
       compareObjects(a, b);
     }
   }
