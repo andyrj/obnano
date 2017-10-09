@@ -128,13 +128,17 @@ export function observable(value) {
         });
         observers.forEach(o => {
           if (o.__computed === true) {
-            if (transaction.computed.indexOf(o) === -1) {
-              transaction.computed.push(o);
+            const index = transaction.computed.indexOf(o);
+            if (index > -1) {
+              transaction.computed.splice(index, 1);
             }
+            transaction.computed.push(o);
           } else {
-            if (transaction.autorun.indexOf(o) === -1) {
-              transaction.autorun.push(o);
+            const index = transaction.autorun.indexOf(o);
+            if (index > -1) {
+              transaction.autorun.splice(index, 1);
             }
+            transaction.autorun.push(o);
           }
         });
       }
