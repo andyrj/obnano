@@ -88,21 +88,17 @@ export function action(fn, context) {
           transaction.autorun.length > 0) &&
         depth > 0
       ) {
-        while (transaction.observable.length > 0) {
+        if (transaction.observable.length > 0) {
           transaction.observable.shift()();
-        }
-        while (transaction.computed.length > 0) {
+        } else if (transaction.computed.length > 0) {
           transaction.computed.shift().run();
-        }
-        if (
-          transaction.computed.length === 0 &&
-          transaction.observable.length === 0
-        ) {
-          while (transaction.autorun.length > 0) {
-            transaction.autorun.shift().run();
-          }
+        } else {
+          transaction.autorun.shift().run();
         }
         depth--;
+      }
+      if (depth === 0) {
+        console.warn("circular dependency detected");
       }
       depth = MAX_DEPTH;
     }
