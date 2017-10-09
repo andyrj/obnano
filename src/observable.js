@@ -4,6 +4,77 @@ const MAX_DEPTH = 100;
 let depth = MAX_DEPTH;
 const transaction = { observable: [], computed: [], autorun: [] };
 
+const arrayMutators = [
+  "splice",
+  "push",
+  "unshift",
+  "pop",
+  "shift",
+  "copyWithin",
+  "reverse"
+];
+
+function notifyObservers(obs) {
+  obs.forEach(o => {
+    if (actions === 0) {
+      o.run();
+    } else {
+      if (o.__computed) {
+        const index = transaction.computed.indexOf(o);
+        if (index > -1) {
+          transaction.computed.splice(index, 1);
+        }
+        transaction.computed.push(o);
+      } else {
+        const index = transaction.autorun.indexOf(o);
+        if (index > -1) {
+          transaction.autorun.splice(index, 1);
+        }
+        transaction.autorun.push(o);
+      }
+    }
+  });
+}
+
+function extendArray(val, observers) {
+  const arrHandler = {
+    get: function(target, name) {
+      if (arrayMutators.indexOf(name) > -1) {
+        return function() {
+          // making clone and operating on that then setting value is simplest way to maintain observability
+          const clone = target.slice(0);
+          const res = Array.prototype[name].apply(clone, arguments);
+          target[name] = clone;
+          return res;
+        };
+      } else {
+        return target[name];
+      }
+    },
+    set: function(target, name, value) {
+      if (name in target) {
+        if (target[name].__observable === true) {
+          let val = value;
+          if (value.__observable === true) {
+            val = value(); // unwrap observable so that it doesn't get nested...
+          }
+          if (actions === 0) {
+            target[name](val);
+          } else {
+            transaction.observable.push(() => {
+              target[name](val);
+            });
+          }
+        } else {
+          target[name] = value;
+        }
+        notifyObservers(observers);
+      }
+    }
+  };
+  return new Proxy(val, arrHandler);
+}
+
 export function Store(state = {}, actions = {}) {
   const local = {};
   let proxy;
@@ -117,31 +188,20 @@ export function observable(value) {
       if (stack.length > 0) {
         stack[stack.length - 1].addDependency(data);
       }
-      return value;
+      if (Array.isArray(value)) {
+        return extendArray(value);
+      } else {
+        return value;
+      }
     } else {
       if (actions === 0) {
         value = arg;
-        observers.forEach(o => o.run());
       } else {
         transaction.observable.push(() => {
           value = arg;
         });
-        observers.forEach(o => {
-          if (o.__computed === true) {
-            const index = transaction.computed.indexOf(o);
-            if (index > -1) {
-              transaction.computed.splice(index, 1);
-            }
-            transaction.computed.push(o);
-          } else {
-            const index = transaction.autorun.indexOf(o);
-            if (index > -1) {
-              transaction.autorun.splice(index, 1);
-            }
-            transaction.autorun.push(o);
-          }
-        });
       }
+      notifyObservers(observers);
     }
   };
   data.__observable = true;
