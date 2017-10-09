@@ -41,7 +41,7 @@ function extendArray(val, observers) {
     get: function(target, name) {
       if (arrayMutators.indexOf(name) > -1) {
         return function() {
-          // making clone and operating on that then setting value is simplest way to maintain observability
+          // operating on clone then setting value is simple way to maintain observability
           const clone = target.slice(0);
           const res = Array.prototype[name].apply(clone, arguments);
           target[name] = clone;
