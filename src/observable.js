@@ -91,11 +91,13 @@ export function action(fn, context) {
         if (transaction.observable.length > 0) {
           transaction.observable.shift()();
         } else if (transaction.computed.length > 0) {
+          if (transaction.computed.length === 1) {
+            depth--;
+          }
           transaction.computed.shift().run();
         } else {
           transaction.autorun.shift().run();
         }
-        depth--;
       }
       if (depth === 0) {
         console.warn("circular dependency detected");
