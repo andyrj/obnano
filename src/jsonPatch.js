@@ -1,5 +1,6 @@
 /*
 simple json patch implementation that mutates json in place which will work with our store proxy...
+adheres to RFC6902
 */
 function add(doc, path, value) {
   const { parent, prop } = walkPath(doc, path);
