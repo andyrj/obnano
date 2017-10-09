@@ -73,47 +73,47 @@ function compareArray(a, b) {
   }
 }
 
-/* eslint-disable */
+function compareObjects(a, b) {
+  const aKeys = Object.keys(a);
+  const bKeys = Object.keys(b);
+  if (aKeys.length !== bKeys.length) {
+    return false;
+  } else {
+    const len = aKeys.length;
+    let i = 0;
+    for (; i < len; i++) {
+      const aKey = aKeys[i];
+      if (!compare(a[aKey], b[aKey])) {
+        return false;
+      }
+    }
+    return true;
+  }
+}
+
 function compare(a, b) {
-  if (Array.isArray(a)) {
+  if (typeof a !== typeof b) {
+    return false;
+  } else if (Array.isArray(a)) {
     if (Array.isArray(b)) {
       return compareArray(a, b);
     } else {
       return false;
     }
   } else {
-    if (typeof a !== typeof b) {
-      return false;
-    } else {
-      if (
-        typeof a === "number" ||
-        typeof a === "string" ||
-        a === false ||
-        a === true ||
-        a === null
-      ) {
-        return a === b;
-      } else { // compare objects...
-        const aKeys = Object.keys(a);
-        const bKeys = Object.keys(b);
-        if (aKeys.length !== bKeys.length) {
-          return false;
-        } else {
-          const len = aKeys.length;
-          let i = 0;
-          for (; i < len; i++) {
-            const aKey = aKeys[i];
-            if (!compare(a[aKey], b[aKey])) {
-              return false;
-            }
-          }
-          return true;
-        }
-      }
+    if (
+      typeof a === "number" ||
+      typeof a === "string" ||
+      a === false ||
+      a === true ||
+      a === null
+    ) {
+      return a === b;
+    } else { // compare objects...
+      compareObjects(a, b);
     }
   }
 }
-/* eslint-enable */
 
 function test(doc, path, value) {
   const { parent, prop } = walkPath(doc, path);
