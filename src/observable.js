@@ -45,6 +45,7 @@ function extendArray(val, observers) {
           const clone = target.slice(0);
           const res = Array.prototype[name].apply(clone, arguments);
           target[name] = clone;
+          notifyObservers(observers);
           return res;
         };
       } else {
@@ -66,7 +67,13 @@ function extendArray(val, observers) {
             });
           }
         } else {
-          target[name] = value;
+          if (actions === 0) {
+            target[name] = value;
+          } else {
+            transaction.observable.push(() => {
+              target[name] = value;
+            });
+          }
         }
         notifyObservers(observers);
       }
@@ -182,14 +189,14 @@ export function action(fn, context) {
 }
 
 export function observable(value) {
-  let observers = [];
+  const observers = [];
   const data = function(arg) {
     if (arg === undefined) {
       if (stack.length > 0) {
         stack[stack.length - 1].addDependency(data);
       }
       if (Array.isArray(value)) {
-        return extendArray(value);
+        return extendArray(value, observers);
       } else {
         return value;
       }
@@ -217,7 +224,10 @@ export function observable(value) {
     }
   };
   data.dispose = function() {
-    observers = [];
+    // drain observers instead of overwriting var
+    while (observers.length > 0) {
+      observers.pop();
+    }
   };
   // data.getObservers = function() {
   //   return observers.slice(0);
@@ -231,7 +241,7 @@ export function observable(value) {
 }
 
 export function computed(thunk, context) {
-  let current = observable(undefined);
+  const current = observable(undefined);
   let disposed = false;
   const computation = function() {
     //if (disposed) return; // not needed?
@@ -254,7 +264,7 @@ export function computed(thunk, context) {
     current.dispose();
     dispose();
     dispose = undefined;
-    current = undefined;
+    //current = undefined;
     disposed = true;
   };
   //wrapper.getObserving = runner.getObserving();
@@ -263,7 +273,7 @@ export function computed(thunk, context) {
 }
 
 export function autorun(thunk, computed = false) {
-  let observing = []; // array of { store, name }
+  const observing = []; // array of { store, name }
   let disposed = false;
   const reaction = {
     addDependency: function(obs) {
@@ -293,5 +303,8 @@ export function autorun(thunk, computed = false) {
   return function() {
     disposed = true;
     observing.splice(0).forEach(o => o.unsubscribe(this));
+    while (observing.length > 0) {
+      observing.pop();
+    }
   };
 }
