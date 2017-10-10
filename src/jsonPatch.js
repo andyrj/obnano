@@ -131,7 +131,6 @@ function pointerToArr(pointer) {
 }
 
 function walkPath(doc, arr) {
-  //let clone = arr.slice(0);
   const prop = arr.pop();
   let parent;
   while (arr.length > 0) {
