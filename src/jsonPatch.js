@@ -5,13 +5,11 @@ adheres to RFC6902
 function add(doc, path, value) {
   const { parent, prop } = walkPath(doc, path);
   if (Array.isArray(parent)) {
-    try {
-      let index = parseInt(prop);
-      parent.splice(index, 0, value);
-    } catch (_) {
-      //throw new RangeError("Invalid array index, given: " + prop);
+    let index = parseInt(prop);
+    if (isNaN(index)) {
       return false;
     }
+    parent.splice(index, 0, value);
   } else {
     parent[prop] = value;
   }
@@ -21,15 +19,13 @@ function add(doc, path, value) {
 function remove(doc, path) {
   const { parent, prop } = walkPath(doc, path);
   if (Array.isArray(parent)) {
-    try {
-      let index = parseInt(prop);
-      parent.splice(index, 1);
-    } catch (_) {
-      //throw new RangeError("Invalid array index, given: " + prop);
+    let index = parseInt(prop);
+    if (isNaN(index)) {
       return false;
     }
+    parent.splice(index, 1);
   } else {
-    delete parent[prop];
+    return delete parent[prop];
   }
   return true;
 }
@@ -92,26 +88,18 @@ function compareObjects(a, b) {
 }
 
 function compare(a, b) {
-  if (typeof a !== typeof b) {
-    return false;
-  } else if (Array.isArray(a)) {
-    if (Array.isArray(b)) {
-      return compareArray(a, b);
-    } else {
-      return false;
-    }
+  if (Array.isArray(a)) {
+    return compareArray(a, b);
+  } else if (
+    typeof a === "number" ||
+    typeof a === "string" ||
+    a === false ||
+    a === true ||
+    a === null
+  ) {
+    return a === b;
   } else {
-    if (
-      typeof a === "number" ||
-      typeof a === "string" ||
-      a === false ||
-      a === true ||
-      a === null
-    ) {
-      return a === b;
-    } else {
-      return compareObjects(a, b);
-    }
+    return compareObjects(a, b);
   }
 }
 

@@ -56,6 +56,26 @@ test("applyPatch should properly add", t => {
   t.deepEqual(initial, expected);
 });
 
+test("applyPatch should properly add to array", t => {
+  const expected = {
+    a: {
+      b: {
+        c: [1, 2, 3]
+      }
+    }
+  };
+  const initial = {
+    a: {
+      b: {
+        c: [1, 3]
+      }
+    }
+  };
+  applyPatch(initial, [patchAdd(["a", "b", "c", 1], 2)]);
+  t.deepEqual(initial, expected); 
+  t.is(applyPatch(initial, [patchAdd(["a", "b", "c", "d"], 3)]), false);
+});
+
 test("applyPatch should properly remove", t => {
   const expected = {
     a: {
@@ -71,6 +91,26 @@ test("applyPatch should properly remove", t => {
   };
   applyPatch(initial, [patchRemove(["a", "b", "c"])]);
   t.deepEqual(initial, expected);
+});
+
+test("applyPatch should properly remove from array", t => {
+  const expected = {
+    a: {
+      b: {
+        c: [1, 3]
+      }
+    }
+  };
+  const initial = {
+    a: {
+      b: {
+        c: [1, 2, 3]
+      }
+    }
+  };
+  applyPatch(initial, [patchRemove(["a", "b", "c", 1])]);
+  t.deepEqual(initial, expected);
+  t.is(applyPatch(initial, [patchRemove(["a", "b", "c", "d"])]), false);
 });
 
 test("applyPatch should properly replace", t => {
@@ -137,7 +177,12 @@ test("applyTest should properly test", t => {
       b: {
         c: "test",
         d: ["1", "2", "3"],
-        e: {}
+        e: {},
+        f: {
+          g: {
+            h: "test"
+          }
+        }
       }
     }
   };
@@ -145,6 +190,22 @@ test("applyTest should properly test", t => {
   t.is(applyPatch(initial, [patchTest(["a", "b", "c"], "test1")]), false);
   t.is(applyPatch(initial, [patchTest(["a", "b", "d"], ["1", "2", "3"])]), true);
   t.is(applyPatch(initial, [patchTest(["a", "b", "d"], ["1", "2"])]), false);
+  t.is(applyPatch(initial, [patchTest(["a", "b", "d"], ["1", "2", "4"])]), false);
+  t.is(applyPatch(initial, [patchTest(["a", "b", "d"], 0)]), false);
   t.is(applyPatch(initial, [patchTest(["a", "b", "e"], {})]), true);
   t.is(applyPatch(initial, [patchTest(["a", "b", "e"], {boom: true})]), false);
+  t.is(applyPatch(initial, [patchTest(["a", "b", "f"], {g: { h: "test" }})]), true);
+  t.is(applyPatch(initial, [patchTest(["a", "b", "f"], {g: { h: "boom" }})]), false);
+});
+
+test("invalid patches should cause applyPatch to throw", t => {
+  t.throws(() => {
+    applyPatch({}, [{test: "woops"}]);
+  });
+  t.throws(() => {
+    applyPatch({}, [{op: "add", test: "woops"}]);
+  });
+  t.throws(() => {
+    applyPatch({}, [{op: "woops"}]);
+  });
 });
