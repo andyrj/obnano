@@ -131,10 +131,10 @@ function pointerToArr(pointer) {
 }
 
 function walkPath(doc, arr) {
-  let clone = arr.slice(0);
-  const prop = clone.pop();
+  //let clone = arr.slice(0);
+  const prop = arr.pop();
   let parent;
-  while (clone.length > 0) {
+  while (arr.length > 0) {
     if (parent === undefined) {
       parent = doc[arr.shift()];
     } else {
