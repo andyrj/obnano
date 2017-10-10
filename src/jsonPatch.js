@@ -35,9 +35,12 @@ function remove(doc, path) {
 }
 
 function replace(doc, path, value) {
+  console.log(doc, path, value);
   let result = false;
   result = remove(doc, path);
+  console.log(doc, path, value);
   result = add(doc, path, value);
+  console.log(doc, path, value);
   return result;
 }
 
@@ -131,13 +134,14 @@ function pointerToArr(pointer) {
 }
 
 function walkPath(doc, arr) {
-  const prop = arr.pop();
+  const clone = arr.slice(0);
+  const prop = clone.pop();
   let parent;
-  while (arr.length > 0) {
+  while (clone.length > 0) {
     if (parent === undefined) {
-      parent = doc[arr.shift()];
+      parent = doc[clone.shift()];
     } else {
-      parent = parent[arr.shift()];
+      parent = parent[clone.shift()];
     }
   }
   return { parent, prop };

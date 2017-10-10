@@ -46,12 +46,48 @@ test("applyPatch should properly add", t => {
         c: "test"
       }
     }
-  }
+  };
   const initial = {
     a: {
       b: {}
     }
   };
   applyPatch(initial, [patchAdd(["a", "b", "c"], "test")]);
+  t.deepEqual(initial, expected);
+});
+
+test("applyPatch should properly remove", t => {
+  const expected = {
+    a: {
+      b: {}
+    }
+  };
+  const initial = {
+    a: {
+      b: {
+        c: "test"
+      }
+    }
+  };
+  applyPatch(initial, [patchRemove(["a", "b", "c"])]);
+  t.deepEqual(initial, expected);
+});
+
+test("applyPatch should properly replace", t => {
+  const initial = {
+    a: {
+      b: {
+        c: "test"
+      }
+    }
+  };
+  const expected = {
+    a: {
+      b: {
+        c: "test1"
+      }
+    }
+  };
+  applyPatch(initial, [patchReplace(["a", "b", "c"], "test1")]);
   t.deepEqual(initial, expected);
 });
