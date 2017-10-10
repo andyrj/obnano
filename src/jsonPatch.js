@@ -35,12 +35,9 @@ function remove(doc, path) {
 }
 
 function replace(doc, path, value) {
-  console.log(doc, path, value);
   let result = false;
   result = remove(doc, path);
-  console.log(doc, path, value);
   result = add(doc, path, value);
-  console.log(doc, path, value);
   return result;
 }
 
@@ -113,7 +110,7 @@ function compare(a, b) {
     ) {
       return a === b;
     } else {
-      compareObjects(a, b);
+      return compareObjects(a, b);
     }
   }
 }

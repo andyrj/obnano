@@ -91,3 +91,60 @@ test("applyPatch should properly replace", t => {
   applyPatch(initial, [patchReplace(["a", "b", "c"], "test1")]);
   t.deepEqual(initial, expected);
 });
+
+test("applyMove should properly move", t => {
+  const initial = {
+    a: {
+      b: {
+        c: "test"
+      }
+    }
+  };
+  const expected = {
+    a: {
+      b: {
+        d: "test"
+      }
+    }
+  };
+  applyPatch(initial, [patchMove(["a", "b", "c"], ["a", "b", "d"])]);
+  t.deepEqual(initial, expected);
+});
+
+test("applyCopy should properly copy", t => {
+  const initial = {
+    a: {
+      b: {
+        c: "test"
+      }
+    }
+  };
+  const expected = {
+    a: {
+      b: {
+        c: "test",
+        d: "test"
+      }
+    }
+  };
+  applyPatch(initial, [patchCopy(["a", "b", "c"], ["a", "b", "d"])]);
+  t.deepEqual(initial, expected);
+});
+
+test("applyTest should properly test", t => {
+  const initial = {
+    a: {
+      b: {
+        c: "test",
+        d: ["1", "2", "3"],
+        e: {}
+      }
+    }
+  };
+  t.is(applyPatch(initial, [patchTest(["a", "b", "c"], "test")]), true);
+  t.is(applyPatch(initial, [patchTest(["a", "b", "c"], "test1")]), false);
+  t.is(applyPatch(initial, [patchTest(["a", "b", "d"], ["1", "2", "3"])]), true);
+  t.is(applyPatch(initial, [patchTest(["a", "b", "d"], ["1", "2"])]), false);
+  t.is(applyPatch(initial, [patchTest(["a", "b", "e"], {})]), true);
+  t.is(applyPatch(initial, [patchTest(["a", "b", "e"], {boom: true})]), false);
+});
