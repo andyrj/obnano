@@ -1,5 +1,5 @@
 const stack = [];
-let actions = 0; // track nested actions to determine when to reconcile
+let actions = 0;
 const MAX_DEPTH = 100;
 let depth = MAX_DEPTH;
 const transaction = { observable: [], computed: [], autorun: [] };
@@ -19,7 +19,7 @@ function notifyObservers(obs) {
     if (actions === 0) {
       o.run();
     } else {
-      if (o.__computed) {
+      if (o.__type === "computed") {
         const index = transaction.computed.indexOf(o);
         if (index > -1) {
           transaction.computed.splice(index, 1);
@@ -41,7 +41,6 @@ function extendArray(val, observers) {
     get: function(target, name) {
       if (arrayMutators.indexOf(name) > -1) {
         return function() {
-          // operating on clone then setting value is simple way to maintain observability
           const clone = target.slice(0);
           const res = Array.prototype[name].apply(clone, arguments);
           target[name] = clone;
@@ -54,10 +53,10 @@ function extendArray(val, observers) {
     },
     set: function(target, name, value) {
       if (name in target) {
-        if (target[name].__observable === true) {
+        if (target[name].__type === "observable") {
           let val = value;
-          if (value.__observable === true) {
-            val = value(); // unwrap observable so that it doesn't get nested...
+          if (value.__type === "observable") {
+            val = value();
           }
           if (actions === 0) {
             target[name](val);
@@ -88,7 +87,10 @@ export function Store(state = {}, actions = {}) {
   const handler = {
     get(target, name) {
       if (name in target) {
-        if (target[name].__observable || target[name].__computed) {
+        if (
+          target[name].__type === "observable" ||
+          target[name].__type === "computed"
+        ) {
           return target[name]();
         }
         return target[name];
@@ -98,24 +100,24 @@ export function Store(state = {}, actions = {}) {
     },
     set(target, name, value) {
       if (name in target) {
-        if (target[name].__observable === true) {
+        if (target[name].__type === "observable") {
           if (value.__observable) {
             target[name](value());
           } else {
             target[name](value);
           }
         } else {
-          if (target[name].__computed === true) {
+          if (target[name].__type === "computed") {
             target[name].dispose();
           }
           target[name] = value;
         }
       } else {
         if (typeof value === "function") {
-          if (value.__action === true) {
+          if (value.__type === "action") {
             target[name] = value;
           } else {
-            if (!value.__observable) {
+            if (!value.__type === "computed") {
               target[name] = computed(value, proxy);
             } else {
               target[name] = value;
@@ -150,7 +152,7 @@ export function Store(state = {}, actions = {}) {
   Object.keys(actions).forEach(key => {
     proxy[key] = action(actions[key], proxy);
   });
-  proxy.__store = true;
+  proxy.__type = "store";
   return proxy;
 }
 
@@ -184,7 +186,7 @@ export function action(fn, context) {
     }
     actions--;
   };
-  func.__action = true;
+  func.__type = "action";
   return func;
 }
 
@@ -211,7 +213,7 @@ export function observable(value) {
       notifyObservers(observers);
     }
   };
-  data.__observable = true;
+  data.__type = "observable";
   data.subscribe = function(observer) {
     if (observers.indexOf(observer) === -1) {
       observers.push(observer);
@@ -224,18 +226,8 @@ export function observable(value) {
     }
   };
   data.dispose = function() {
-    // drain observers instead of overwriting var
-    while (observers.length > 0) {
-      observers.pop();
-    }
+    flush(observers);
   };
-  // data.getObservers = function() {
-  //   return observers.slice(0);
-  // };
-  // data.setObservers = function(os) {
-  //   observers = os;
-  //   return true;
-  // };
   Object.freeze(data);
   return data;
 }
@@ -244,7 +236,6 @@ export function computed(thunk, context) {
   const current = observable(undefined);
   let disposed = false;
   const computation = function() {
-    //if (disposed) return; // not needed?
     const result = context != null ? thunk.call(context) : thunk();
     current(result);
   };
@@ -259,21 +250,25 @@ export function computed(thunk, context) {
       return current();
     }
   }
-  wrapper.__computed = true;
+  wrapper.__type = "computed";
   wrapper.dispose = function() {
     current.dispose();
     dispose();
     dispose = undefined;
-    //current = undefined;
     disposed = true;
   };
-  //wrapper.getObserving = runner.getObserving();
   Object.freeze(wrapper);
   return wrapper;
 }
 
+function flush(arr) {
+  while (arr.length > 0) {
+    arr.pop();
+  }
+}
+
 export function autorun(thunk, computed = false) {
-  const observing = []; // array of { store, name }
+  const observing = [];
   let disposed = false;
   const reaction = {
     addDependency: function(obs) {
@@ -290,21 +285,12 @@ export function autorun(thunk, computed = false) {
         stack.pop(this);
       }
     },
-    __computed: computed /*,
-    getObserving: function() {
-      return observing.slice(0);
-    },
-    setObserving: function(os) {
-      observing = os;
-      return true;
-    },*/
+    __type: computed ? "computed" : "autorun"
   };
   reaction.run();
   return function() {
     disposed = true;
     observing.splice(0).forEach(o => o.unsubscribe(this));
-    while (observing.length > 0) {
-      observing.pop();
-    }
+    flush(observing);
   };
 }
