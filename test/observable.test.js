@@ -309,3 +309,35 @@ test("computeds that depend on other computed values should not output stale or 
   t.is(a, 2);
   t.is(b, 2);
 });
+
+test("observable array should return proxy that notifies observers on set", t => {
+  const arr = observable([1, 2, 3, observable(4)]);
+  let count = 0;
+  let sum = 0;
+  autorun(() => {
+    count++;
+    sum = arr().reduce((acc, val) => {
+      if (val === undefined) {
+        return acc;
+      } else if (val.__type === "observable") {
+        return acc + val();
+      }
+      return acc + val;
+    }, 0);
+  });
+  arr()[3] = observable(3);
+  t.is(count, 3);
+  t.is(sum, 9);
+  arr()[10] = 1; // test that it also works on sparse arrays...
+  t.is(count, 4);
+  t.is(sum, 10);
+  arr()[0] = 0;
+  t.is(count, 5);
+  t.is(sum, 9);
+  arr()[3] = 5;
+  t.is(count, 7);
+  t.is(sum, 11);
+  t.throws(() => {
+    arr()["foo"] = false;
+  })
+});

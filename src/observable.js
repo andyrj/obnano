@@ -52,30 +52,25 @@ function extendArray(val, observers) {
       }
     },
     set: function(target, name, value) {
-      if (name in target) {
+      if (target[name] !== undefined) {
         if (target[name].__type === "observable") {
-          let val = value;
-          if (value.__type === "observable") {
-            val = value();
-          }
-          if (actions === 0) {
-            target[name](val);
+          if (value !== undefined && value.__type === "observable") {
+            target[name](value());
           } else {
-            transaction.observable.push(() => {
-              target[name](val);
-            });
+            target[name](value);
           }
         } else {
-          if (actions === 0) {
-            target[name] = value;
-          } else {
-            transaction.observable.push(() => {
-              target[name] = value;
-            });
-          }
+          target[name] = value;
         }
-        notifyObservers(observers);
+      } else {
+        if (!isNaN(parseInt(name))) {
+          target[name] = value;
+        } else {
+          return false;
+        }
       }
+      notifyObservers(observers);
+      return true;
     }
   };
   return new Proxy(val, arrHandler);
