@@ -113,7 +113,7 @@ export function Store(state = {}, actions = {}) {
     deleteProperty(target, name) {
       if (name in target) {
         if (target[name].dispose !== undefined) {
-          target[name].dispose;
+          target[name].dispose();
         }
         delete target[name];
         return true;
