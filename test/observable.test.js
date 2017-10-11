@@ -100,6 +100,18 @@ test("computed should stop and return only undefined after being disposed", t =>
   t.is(comp(), undefined);
 });
 
+test("disposed observables should flush observers", t => {
+  const test = observable("test");
+  let count = 0;
+  autorun(() => {
+    count++;
+    test();
+  });
+  t.is(count, 1);
+  test.dispose();
+  t.is(test(), undefined);
+});
+
 test("Store should work with no parameters", t => {
   const store = Store();
   store.test = observable("Test");
@@ -340,4 +352,52 @@ test("observable array should return proxy that notifies observers on set", t =>
   t.throws(() => {
     arr()["foo"] = false;
   })
+});
+
+test("observable array should notify observers on mutator function execution", t => {
+  const arr = observable([1, 2, 3, 4]);
+  let count = 0;
+  let sum = 0;
+  autorun(() => {
+    count++;
+    sum = arr().reduce((acc, val) => {
+      if (val === undefined) {
+        return acc;
+      } else if (val.__type === "observable") {
+        return acc + val();
+      }
+      return acc + val;
+    }, 0);
+  });
+  t.is(count ,1);
+  arr().pop();
+  t.is(count, 2);
+  t.is(sum, 6);
+});
+
+test("circular dependencies should short circuit after MAX_DEPTH iterations", t => {
+  const count1 = observable(0);
+  const count2 = observable(0);
+  const inc1 = () => count1(count1() + 1);
+  const inc2 = () => count2(count2() + 1);
+  const comp1 = computed(() => {
+    const newVal = `comp1: ${count1()}`;
+    inc2();
+    return newVal;
+  });
+  const comp2 = computed(() => {
+    const newVal = `comp2: ${count2()}`;
+    inc1();
+    return newVal;
+  });
+  const act = action(() => {
+    inc1();
+    inc2();
+  })
+  autorun(() => {
+    let c1 = comp1();
+    let c2 = comp2();
+    act();
+  });
+  t.is(count2() + count1() > 100, true);
 });

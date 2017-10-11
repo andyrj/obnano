@@ -41,9 +41,8 @@ function extendArray(val, observers) {
     get: function(target, name) {
       if (arrayMutators.indexOf(name) > -1) {
         return function() {
-          const clone = target.slice(0);
-          const res = Array.prototype[name].apply(clone, arguments);
-          target[name] = clone;
+          //const clone = target.slice(0);
+          const res = Array.prototype[name].apply(target, arguments);
           notifyObservers(observers);
           return res;
         };
@@ -96,7 +95,7 @@ export function Store(state = {}, actions = {}) {
     set(target, name, value) {
       if (name in target) {
         if (target[name].__type === "observable") {
-          if (value.__observable) {
+          if (value.__type === "observable") {
             target[name](value());
           } else {
             target[name](value);
@@ -108,19 +107,7 @@ export function Store(state = {}, actions = {}) {
           target[name] = value;
         }
       } else {
-        if (typeof value === "function") {
-          if (value.__type === "action") {
-            target[name] = value;
-          } else {
-            if (!value.__type === "computed") {
-              target[name] = computed(value, proxy);
-            } else {
-              target[name] = value;
-            }
-          }
-        } else {
-          target[name] = value;
-        }
+        target[name] = value; // user must be explicit in setting values observable/computed/action
       }
       return true;
     },
@@ -138,7 +125,10 @@ export function Store(state = {}, actions = {}) {
   };
   proxy = new Proxy(local, handler);
   Object.keys(state).forEach(key => {
-    if (typeof state[key] === "function" && !state[key].__observable) {
+    if (
+      typeof state[key] === "function" &&
+      state[key].__type !== "observable"
+    ) {
       proxy[key] = computed(state[key], proxy);
     } else {
       proxy[key] = state[key];
@@ -187,7 +177,9 @@ export function action(fn, context) {
 
 export function observable(value) {
   const observers = [];
+  let disposed = false;
   const data = function(arg) {
+    if (disposed) return;
     if (arg === undefined) {
       if (stack.length > 0) {
         stack[stack.length - 1].addDependency(data);
@@ -221,6 +213,7 @@ export function observable(value) {
     }
   };
   data.dispose = function() {
+    disposed = true;
     flush(observers);
   };
   Object.freeze(data);
