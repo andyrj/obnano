@@ -29,8 +29,8 @@ test("observables should not allow duplicate observer subscription", t => {
     run: () => runs++
   };
   const test = observable("test");
-  test.subscribe(reaction);
-  test.subscribe(reaction);
+  test.sub(reaction);
+  test.sub(reaction);
   test("update");
   t.is(runs, 1);
 });
