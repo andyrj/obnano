@@ -5,7 +5,7 @@ function hydrate(element) {
   return element
     ? {
         tag: element.tagName.toLowerCase(),
-        data: {},
+        props: {},
         children: [].map.call(element.childNodes, function(element) {
           return element.nodeType === 3 ? element.nodeValue : hydrate(element);
         })
