@@ -1,6 +1,6 @@
 import test from "ava";
 import { h } from "../src/h";
-import { patch } from "../src/patch";
+import patchFactory from "../src/patch";
 
 require("undom/register");
 
@@ -9,12 +9,14 @@ test.beforeEach(() => {
 });
 
 test("patch should render textNodes properly", t => {
+  const patch = patchFactory([]);
   const str = "test";
   patch(document.body, null, null, str);
   t.is(document.body.childNodes[0].nodeValue, str);
 });
 
 test("patch should update textNodes without replacment", t => {
+  const patch = patchFactory([]);
   const str = "test";
   const str1 = "test1";
   patch(document.body, null, null, str);
@@ -24,6 +26,7 @@ test("patch should update textNodes without replacment", t => {
 });
 
 test("patch should replace textNode with domNode when needed", t => {
+  const patch = patchFactory([]);
   const str1 = "test1";
   patch(document.body, null, null, str1);
   t.is(document.body.childNodes[0].nodeValue, str1);
@@ -35,6 +38,7 @@ test("patch should replace textNode with domNode when needed", t => {
 });
 
 test("patch should remove nodes no in patch", t => {
+  const patch = patchFactory([]);
   const str1 = "test1";
   patch(document.body, null, null, str1);
   t.is(document.body.childNodes[0].nodeValue, str1);
@@ -44,6 +48,7 @@ test("patch should remove nodes no in patch", t => {
 });
 
 test("patch should skip memoized nodes", t => {
+  const patch = patchFactory([]);
   const node = h("div", { id: "test" }, []);
   patch(document.body, null, null, node);
   t.is(document.body.childNodes[0].nodeName, "DIV");
@@ -54,6 +59,7 @@ test("patch should skip memoized nodes", t => {
 });
 
 test("patch should update domNodes", t => {
+  const patch = patchFactory([]);
   const node = h("div", { id: "test", class: "t1" }, []);
   patch(document.body, null, null, node);
   let n = document.body.childNodes[0];
@@ -85,6 +91,7 @@ test("patch should update domNodes", t => {
 });
 
 test("patch should add child nodes", t => {
+  const patch = patchFactory([]);
   const node = h("div", { id: "test" }, []);
   patch(document.body, null, null, node);
   t.is(document.body.childNodes[0].nodeName, "DIV");
@@ -96,6 +103,7 @@ test("patch should add child nodes", t => {
 });
 
 test("patch should remove child nodes", t => {
+  const patch = patchFactory([]);
   const str = "test";
   const children = h("div", { id: "test" }, [str]);
   patch(document.body, null, null, children);
@@ -106,12 +114,14 @@ test("patch should remove child nodes", t => {
 });
 
 test("should not ouptut key attribute", t => {
+  const patch = patchFactory([]);
   const node = h("div", { key: 1 }, []);
   patch(document.body, null, null, node);
   t.is(document.body.childNodes[0].attributes.length, 0);
 });
 
 test("patch should update un-keyed child nodes", t => {
+  const patch = patchFactory([]);
   const str = "test";
   const children = h("div", { id: "test" }, [str]);
   patch(document.body, null, null, children);
@@ -130,6 +140,7 @@ test("patch should update un-keyed child nodes", t => {
 });
 
 test("null keys should still be handled as un-keyed", t => {
+  const patch = patchFactory([]);
   const str = "test";
   const children = h("div", { id: "test" }, [str]);
   patch(document.body, null, null, children);
@@ -155,6 +166,7 @@ test("null keys should still be handled as un-keyed", t => {
 });
 
 test("keyed with duplicates should throw RangeError", t => {
+  const patch = patchFactory([]);
   const c1 = [
     h("div", {key: 0}, ["0"]),
     h("div", {key: 1}, ["1"])
@@ -170,17 +182,20 @@ test("keyed with duplicates should throw RangeError", t => {
 });
 
 test("lifecycle functions should not end up in dom", t => {
+  const patch = patchFactory([]);
   const node = h("div", { oncreate: () => {}}, []);
   patch(document.body, null, null, node);
   t.is(document.body.firstChild.attributes.length, 0);
 });
 
 test("patch call with oldNode and node both null throws", t => {
+  const patch = patchFactory([]);
   t.throws(() => patch(document.body, null, null, null));
 });
 
 /*
 test("lifecycle methods should work", t => {
+  const patch = patchFactory([]);
   let create = 0;
   let update = 0;
   let remove = 0;

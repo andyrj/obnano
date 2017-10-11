@@ -1,6 +1,6 @@
 import test from "ava";
 import { h } from "../src/h";
-import { patch } from "../src/patch";
+import patchFactory from "../src/patch";
 
 require("undom/register");
 
@@ -9,6 +9,7 @@ test.beforeEach(() => {
 });
 
 test("keyed nodes should diff correctly", t => {
+  const patch = patchFactory([]);
   const c1 = [
     h("div", {key: 0}, ["0"]),
     h("div", {key: 1}, ["1"]),
