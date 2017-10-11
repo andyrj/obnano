@@ -331,7 +331,7 @@ test("observable array should return proxy that notifies observers on set", t =>
     sum = arr().reduce((acc, val) => {
       if (val === undefined) {
         return acc;
-      } else if (val.__type === "observable") {
+      } else if (val.__type === 0) {
         return acc + val();
       }
       return acc + val;

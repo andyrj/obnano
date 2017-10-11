@@ -1,6 +1,11 @@
 const stack = [];
 let actions = 0;
 const MAX_DEPTH = 100;
+const OBSERVABLE = 0;
+const COMPUTED = 1;
+const AUTORUN = 2;
+const ACTION = 3;
+const STORE = 4;
 let depth = MAX_DEPTH;
 const transaction = { observable: [], computed: [], autorun: [] };
 
@@ -19,7 +24,7 @@ function notifyObservers(obs) {
     if (actions === 0) {
       o.run();
     } else {
-      if (o.__type === "computed") {
+      if (o.__type === COMPUTED) {
         const index = transaction.computed.indexOf(o);
         if (index > -1) {
           transaction.computed.splice(index, 1);
@@ -51,8 +56,8 @@ function extendArray(val, observers) {
     },
     set: function(target, name, value) {
       if (target[name] !== undefined) {
-        if (target[name].__type === "observable") {
-          if (value !== undefined && value.__type === "observable") {
+        if (target[name].__type === OBSERVABLE) {
+          if (value !== undefined && value.__type === OBSERVABLE) {
             target[name](value());
           } else {
             target[name](value);
@@ -81,8 +86,8 @@ export function Store(state = {}, actions = {}) {
     get(target, name) {
       if (name in target) {
         if (
-          target[name].__type === "observable" ||
-          target[name].__type === "computed"
+          target[name].__type === OBSERVABLE ||
+          target[name].__type === COMPUTED
         ) {
           return target[name]();
         }
@@ -93,14 +98,14 @@ export function Store(state = {}, actions = {}) {
     },
     set(target, name, value) {
       if (name in target) {
-        if (target[name].__type === "observable") {
-          if (value.__type === "observable") {
+        if (target[name].__type === OBSERVABLE) {
+          if (value.__type === OBSERVABLE) {
             target[name](value());
           } else {
             target[name](value);
           }
         } else {
-          if (target[name].__type === "computed") {
+          if (target[name].__type === COMPUTED) {
             target[name].dispose();
           }
           target[name] = value;
@@ -124,10 +129,7 @@ export function Store(state = {}, actions = {}) {
   };
   proxy = new Proxy(local, handler);
   Object.keys(state).forEach(key => {
-    if (
-      typeof state[key] === "function" &&
-      state[key].__type !== "observable"
-    ) {
+    if (typeof state[key] === "function" && state[key].__type !== OBSERVABLE) {
       proxy[key] = computed(state[key], proxy);
     } else {
       proxy[key] = state[key];
@@ -136,7 +138,7 @@ export function Store(state = {}, actions = {}) {
   Object.keys(actions).forEach(key => {
     proxy[key] = action(actions[key], proxy);
   });
-  proxy.__type = "store";
+  proxy.__type = STORE;
   return proxy;
 }
 
@@ -170,7 +172,7 @@ export function action(fn, context) {
     }
     actions--;
   };
-  func.__type = "action";
+  func.__type = ACTION;
   return func;
 }
 
@@ -199,7 +201,7 @@ export function observable(value) {
       notifyObservers(observers);
     }
   };
-  data.__type = "observable";
+  data.__type = OBSERVABLE;
   data.subscribe = function(observer) {
     if (observers.indexOf(observer) === -1) {
       observers.push(observer);
@@ -237,7 +239,7 @@ export function computed(thunk, context) {
       return current();
     }
   }
-  wrapper.__type = "computed";
+  wrapper.__type = COMPUTED;
   wrapper.dispose = function() {
     current.dispose();
     dispose();
@@ -272,7 +274,7 @@ export function autorun(thunk, computed = false) {
         stack.pop(this);
       }
     },
-    __type: computed ? "computed" : "autorun"
+    __type: computed ? COMPUTED : AUTORUN
   };
   reaction.run();
   return function() {
