@@ -41,7 +41,6 @@ function extendArray(val, observers) {
     get: function(target, name) {
       if (arrayMutators.indexOf(name) > -1) {
         return function() {
-          //const clone = target.slice(0);
           const res = Array.prototype[name].apply(target, arguments);
           notifyObservers(observers);
           return res;
