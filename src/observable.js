@@ -7,7 +7,7 @@ const AUTORUN = 2;
 const ACTION = 3;
 const STORE = 4;
 let depth = MAX_DEPTH;
-const transaction = { observable: [], computed: [], autorun: [] };
+const transaction = { o: [], c: [], a: [] };
 
 const arrayMutators = [
   "splice",
@@ -25,17 +25,17 @@ function notifyObservers(obs) {
       o.run();
     } else {
       if (o.__type === COMPUTED) {
-        const index = transaction.computed.indexOf(o);
+        const index = transaction.c.indexOf(o);
         if (index > -1) {
-          transaction.computed.splice(index, 1);
+          transaction.c.splice(index, 1);
         }
-        transaction.computed.push(o);
+        transaction.c.push(o);
       } else {
-        const index = transaction.autorun.indexOf(o);
+        const index = transaction.a.indexOf(o);
         if (index > -1) {
-          transaction.autorun.splice(index, 1);
+          transaction.a.splice(index, 1);
         }
-        transaction.autorun.push(o);
+        transaction.a.push(o);
       }
     }
   });
@@ -149,20 +149,20 @@ export function action(fn, context) {
     fn.apply(context, args);
     if (actions === 1) {
       while (
-        (transaction.observable.length > 0 ||
-          transaction.computed.length > 0 ||
-          transaction.autorun.length > 0) &&
+        (transaction.o.length > 0 ||
+          transaction.c.length > 0 ||
+          transaction.a.length > 0) &&
         depth > 0
       ) {
-        if (transaction.observable.length > 0) {
-          transaction.observable.shift()();
-        } else if (transaction.computed.length > 0) {
-          if (transaction.computed.length === 1) {
+        if (transaction.o.length > 0) {
+          transaction.o.shift()();
+        } else if (transaction.c.length > 0) {
+          if (transaction.c.length === 1) {
             depth--;
           }
-          transaction.computed.shift().run();
+          transaction.c.shift().run();
         } else {
-          transaction.autorun.shift().run();
+          transaction.a.shift().run();
         }
       }
       if (depth === 0) {
@@ -194,7 +194,7 @@ export function observable(value) {
       if (actions === 0) {
         value = arg;
       } else {
-        transaction.observable.push(() => {
+        transaction.o.push(() => {
           value = arg;
         });
       }
