@@ -43,3 +43,49 @@ test("app should hydrate existing dom inside of target", t => {
   t.is(document.body.firstChild.firstChild.firstChild.nodeValue, "test");
 });
 
+test("app should trigger vnode life cycle events", t => {
+  let createCount = 0;
+  let updateCount = 0;
+  let removeCount = 0;
+  const appStore = app({
+    state: {
+      create: false,
+      update: false,
+      remove: false
+    },
+    actions: {
+      doCreate() {
+        this.create = true;
+      },
+      doUpdate() {
+        this.update = true;
+      },
+      doRemove() {
+        this.remove = true;
+      }
+    },
+    view(store) {
+      let children = [];
+      const child = h("div", {
+        class: "test",
+        oncreate: () => ++createCount,
+        onupdate: () => ++updateCount,
+        onremove: () => ++removeCount
+      }, []);
+      if (store.create && !store.update && !store.remove) {
+        children.push(child);
+      } else if (store.add && store.update && !store.remove) {
+        child.props.class="test1";
+        children.push(child);
+      }
+      const parent = h("div", {}, children);
+      return parent;
+    }
+  });
+  appStore.doCreate();
+  t.is(createCount, 1);
+  appStore.doUpdate();
+  t.is(updateCount, 1);
+  appStore.doRemove();
+  t.is(removeCount, 1);
+});

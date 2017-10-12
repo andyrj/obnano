@@ -14,6 +14,8 @@ function hydrate(element) {
 }
 
 export function app({ state, actions, view }, target) {
+  state = state || {};
+  actions = actions || {};
   const invoke = [];
   const patch = patchFactory(invoke);
   const store = Store(state, actions);
