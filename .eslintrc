@@ -22,7 +22,8 @@
     "location": true,
     "addEventListener": true,
     "Element": true,
-    "HTMLElement": true
+    "HTMLElement": true,
+    "requestAnimationFrame": true
   },
   "rules": {
     "prettier/prettier": "error",
