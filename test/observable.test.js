@@ -375,6 +375,12 @@ test("observable array should notify observers on mutator function execution", t
   t.is(sum, 6);
 });
 
+test("store should throw if given state and action with overlapping key", t => {
+  t.throws(() => {
+    const store = Store({test: "test"}, {test(){}});
+  });
+});
+
 test("circular dependencies should short circuit after MAX_DEPTH iterations", t => {
   console.warn = () => {};
   const count1 = observable(0);

@@ -84,12 +84,9 @@ test("app should trigger vnode life cycle events", t => {
     }
   });
   appStore.doCreate();
-  console.log(`create: ${createCount}`);
   t.is(createCount, 1);
   appStore.doUpdate();
-  console.log(`update: ${updateCount}`);
   t.is(updateCount, 1);
   appStore.doRemove();
-  console.log(`remove: ${removeCount}`);
   t.is(removeCount, 1);
 });
