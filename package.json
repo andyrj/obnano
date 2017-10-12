@@ -1,5 +1,5 @@
 {
-  "name": "idiom",
+  "name": "bnano",
   "version": "0.0.2",
   "description": "minimalist vdom for a minimalist h()",
   "main": "dist/idiom.js",
