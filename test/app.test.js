@@ -1,6 +1,7 @@
 import test from "ava";
 import { app } from "../src/app";
 import { h } from "../src/h";
+import { observable } from "../src/observable";
 
 require("undom/register");
 global.requestAnimationFrame = cb => cb(Date.now());
@@ -44,14 +45,15 @@ test("app should hydrate existing dom inside of target", t => {
 });
 
 test("app should trigger vnode life cycle events", t => {
+  console.log("+++++");
   let createCount = 0;
   let updateCount = 0;
   let removeCount = 0;
   const appStore = app({
     state: {
-      create: false,
-      update: false,
-      remove: false
+      create: observable(false),
+      update: observable(false),
+      remove: observable(false)
     },
     actions: {
       doCreate() {
@@ -88,4 +90,5 @@ test("app should trigger vnode life cycle events", t => {
   t.is(updateCount, 1);
   appStore.doRemove();
   t.is(removeCount, 1);
+  console.log("+++++");
 });

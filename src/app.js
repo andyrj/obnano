@@ -24,7 +24,7 @@ export function app({ state, actions, view }, target) {
   target = target || document.body;
   function render() {
     const newNodes = view(store);
-    patch(target, target.childNodes[0], newNodes, oldNodes);
+    patch(target, target.childNodes[0], oldNodes, newNodes);
     oldNodes = newNodes;
     while (invoke.length > 0) {
       invoke.shift()();
@@ -36,6 +36,7 @@ export function app({ state, actions, view }, target) {
   }
   autorun(() => {
     if (!isRendering) {
+      console.log("rendering");
       isRendering = true;
       requestAnimationFrame(render);
     }
