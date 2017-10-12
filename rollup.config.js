@@ -2,7 +2,7 @@ import babel from "rollup-plugin-babel";
 
 export default {
   input: "./src/index.js",
-  name: "idiom",
+  name: "bnano",
   output: {
     file: "./dist/idiom.js",
     format: "umd"
