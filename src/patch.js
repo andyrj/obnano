@@ -48,6 +48,7 @@ export default function patchFactory(invoke) {
   function unkeyed(parent, oldNodes, nodes) {
     let i = 0;
     while (i < oldNodes.length && i < nodes.length) {
+      //console.log(oldNodes[i], nodes[i]);
       patch(parent, parent.childNodes[i], oldNodes[i], nodes[i]);
       i++;
     }

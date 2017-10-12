@@ -75,7 +75,7 @@ test("app should trigger vnode life cycle events", t => {
       }, []);
       if (store.create && !store.update && !store.remove) {
         children.push(child);
-      } else if (store.add && store.update && !store.remove) {
+      } else if (store.create && store.update && !store.remove) {
         child.props.class="test1";
         children.push(child);
       }
