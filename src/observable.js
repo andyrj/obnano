@@ -136,6 +136,9 @@ export function Store(state = {}, actions = {}) {
     }
   });
   Object.keys(actions).forEach(key => {
+    if (proxy[key] !== undefined) {
+      throw new RangeError("action key overlaps with existing state key");
+    }
     proxy[key] = action(actions[key], proxy);
   });
   proxy.__type = STORE;

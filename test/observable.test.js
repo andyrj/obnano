@@ -376,6 +376,7 @@ test("observable array should notify observers on mutator function execution", t
 });
 
 test("circular dependencies should short circuit after MAX_DEPTH iterations", t => {
+  console.warn = () => {};
   const count1 = observable(0);
   const count2 = observable(0);
   const inc1 = () => count1(count1() + 1);
