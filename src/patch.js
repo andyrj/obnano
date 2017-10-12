@@ -1,7 +1,11 @@
+function filterLifecycles(k) {
+  return k !== "oncreate" && k !== "onupdate" && k !== "onremove";
+}
+
 export default function patchFactory(invoke) {
   function diffAttributes(element, oldProps, newProps) {
-    const oldPropKeys = Object.keys(oldProps);
-    const newPropKeys = Object.keys(newProps);
+    const oldPropKeys = Object.keys(oldProps).filter(filterLifecycles);
+    const newPropKeys = Object.keys(newProps).filter(filterLifecycles);
     let i = 0;
     if (newPropKeys.length === 0) {
       for (; i < oldPropKeys.length; i++) {
@@ -54,7 +58,7 @@ export default function patchFactory(invoke) {
       }
     } else {
       while (i < oldNodes.length) {
-        parent.removeChild(parent.childNodes[i]);
+        removeElement(parent, parent.childNodes[i], oldNodes[i].props);
         i++;
       }
     }
@@ -219,8 +223,14 @@ export default function patchFactory(invoke) {
         parent.appendChild(createElement(nodes[i]));
       }
     } else if (oldNodes.length > 0 && nodes.length === 0) {
+      let i = 0;
       while (parent.lastChild) {
-        parent.removeChild(parent.lastChild);
+        removeElement(
+          parent,
+          parent.lastChild,
+          oldNodes[oldNodes.length - i - 1].props
+        );
+        i++;
       }
     } else {
       if (
@@ -268,14 +278,18 @@ export default function patchFactory(invoke) {
 
   function updateElement(element, oldProps, props) {
     if (props && props.onupdate) {
-      invoke.push(props.onupdate(element, oldProps));
+      invoke.push(function() {
+        props.onupdate(element, oldProps, props);
+      });
     }
     diffAttributes(element, oldProps, props);
   }
 
   function removeElement(parent, element, props) {
     if (props && props.onremove) {
-      invoke.push(props.onremove(element));
+      invoke.push(function() {
+        props.onremove(element);
+      });
     }
     parent.removeChild(element);
   }

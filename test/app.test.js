@@ -45,7 +45,6 @@ test("app should hydrate existing dom inside of target", t => {
 });
 
 test("app should trigger vnode life cycle events", t => {
-  console.log("+++++");
   let createCount = 0;
   let updateCount = 0;
   let removeCount = 0;
@@ -67,7 +66,7 @@ test("app should trigger vnode life cycle events", t => {
       }
     },
     view(store) {
-      let children = [];
+      const children = [];
       const child = h("div", {
         class: "test",
         oncreate: () => ++createCount,
@@ -85,10 +84,12 @@ test("app should trigger vnode life cycle events", t => {
     }
   });
   appStore.doCreate();
+  console.log(`create: ${createCount}`);
   t.is(createCount, 1);
   appStore.doUpdate();
+  console.log(`update: ${updateCount}`);
   t.is(updateCount, 1);
   appStore.doRemove();
+  console.log(`remove: ${removeCount}`);
   t.is(removeCount, 1);
-  console.log("+++++");
 });

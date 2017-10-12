@@ -37,7 +37,7 @@ test("patch should replace textNode with domNode when needed", t => {
   t.is(document.body.childNodes[0].id, "test");
 });
 
-test("patch should remove nodes no in patch", t => {
+test("patch should remove nodes not in patch", t => {
   const patch = patchFactory([]);
   const str1 = "test1";
   patch(document.body, null, null, str1);
