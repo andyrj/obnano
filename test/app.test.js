@@ -3,7 +3,7 @@ import { app } from "../src/app";
 import { h } from "../src/h";
 
 require("undom/register");
-global.requestAnimationFrame = setTimeout;
+global.requestAnimationFrame = cb => cb(Date.now());
 
 test.beforeEach(() => {
   document.body = document.createElement("body");
@@ -42,3 +42,4 @@ test("app should hydrate existing dom inside of target", t => {
   });
   t.is(document.body.firstChild.firstChild.firstChild.nodeValue, "test");
 });
+
