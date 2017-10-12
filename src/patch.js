@@ -310,7 +310,8 @@ export default function patchFactory(invoke) {
           diffChildren(element, oldNode.children, node.children);
         }
       } else {
-        parent.replaceChild(createElement(node), element);
+        parent.insertBefore(createElement(node), element);
+        removeElement(parent, element, oldNode.props);
       }
     } else {
       removeElement(parent, element, oldNode.props);
