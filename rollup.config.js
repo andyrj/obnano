@@ -2,9 +2,9 @@ import babel from "rollup-plugin-babel";
 
 export default {
   input: "./src/index.js",
-  name: "bnano",
+  name: "obnano",
   output: {
-    file: "./dist/idiom.js",
+    file: "./dist/obnano.js",
     format: "umd"
   },
   sourcemap: true,
