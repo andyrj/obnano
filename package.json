@@ -1,8 +1,8 @@
 {
-  "name": "bnano",
+  "name": "obnano",
   "version": "0.0.2",
-  "description": "minimalist vdom for a minimalist h()",
-  "main": "dist/bnano.js",
+  "description": "minimalist vdom for a minimalist h() with an observable state tree",
+  "main": "dist/obnano.js",
   "jsnext:main": "src/index.js",
   "module": "src/index.js",
   "directories": {
@@ -26,14 +26,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/andyrj/bnano.git"
+    "url": "git+https://github.com/andyrj/obnano.git"
   },
   "author": "Andy Johnson",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/andyrj/bnano/issues"
+    "url": "https://github.com/andyrj/obnano/issues"
   },
-  "homepage": "https://github.com/andyrj/bnano#readme",
+  "homepage": "https://github.com/andyrj/obnano#readme",
   "dependencies": {},
   "devDependencies": {
     "ava": "^0.22.0",
