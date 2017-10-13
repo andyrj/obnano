@@ -1,4 +1,3 @@
-// JSX is an anti-pattern not going to support it in this experiment...
 function gatherSane(children, child) {
   if (child != null && child !== true && child !== false) {
     children.push(typeof child === "number" ? child + "" : child);

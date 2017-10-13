@@ -20,6 +20,11 @@ test("h should ignore null, true, and false children", t => {
   ]), expected);
 });
 
+test("h should convert children of type number to string", t => {
+  const expected = { type: "div", props: {}, children: ["1"] };
+  t.deepEqual(h("div", {}, 1), expected);
+});
+
 test("h should handle single child as third argument", t => {
   const expected = { type: "div", props: {}, children: ["test"] };
   t.deepEqual(h("div", {}, "test"), expected);

@@ -36,8 +36,6 @@ export function app({ state, actions, view }, target) {
     if (!isRendering) {
       isRendering = true;
       requestAnimationFrame(render);
-    } else {
-      console.log("ignored extra render call");
     }
   });
   return store;
