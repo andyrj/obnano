@@ -1,6 +1,6 @@
 {
   "name": "obnano",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "minimalist vdom with an proxied observable state tree",
   "main": "dist/obnano.js",
   "jsnext:main": "src/index.js",
