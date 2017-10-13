@@ -128,7 +128,7 @@ function walkPath(doc, arr) {
   return { parent, prop };
 }
 
-function validatePatch(patch, keys) {
+function validate(patch, keys) {
   keys.forEach(key => {
     if (patch[key] == null) {
       throw new RangeError("Invalid patch missing required key: " + key);
@@ -136,7 +136,7 @@ function validatePatch(patch, keys) {
   });
 }
 
-export function applyPatch(doc, patches) {
+export function apply(doc, patches) {
   let i = 0;
   const len = patches.length;
   for (; i < len; i++) {
@@ -147,27 +147,27 @@ export function applyPatch(doc, patches) {
     let result = false;
     switch (patch.op) {
       case "add":
-        validatePatch(patch, ["path", "value"]);
+        validate(patch, ["path", "value"]);
         result = add(doc, pointerToArr(patch.path), patch.value);
         break;
       case "remove":
-        validatePatch(patch, ["path"]);
+        validate(patch, ["path"]);
         result = remove(doc, pointerToArr(patch.path));
         break;
       case "replace":
-        validatePatch(patch, ["path", "value"]);
+        validate(patch, ["path", "value"]);
         result = replace(doc, pointerToArr(patch.path), patch.value);
         break;
       case "move":
-        validatePatch(patch, ["from", "path"]);
+        validate(patch, ["from", "path"]);
         result = move(doc, pointerToArr(patch.from), pointerToArr(patch.path));
         break;
       case "copy":
-        validatePatch(patch, ["from", "path"]);
+        validate(patch, ["from", "path"]);
         result = copy(doc, pointerToArr(patch.from), pointerToArr(patch.path));
         break;
       case "test":
-        validatePatch(patch, ["path", "value"]);
+        validate(patch, ["path", "value"]);
         result = test(doc, pointerToArr(patch.path), patch.value);
         break;
       default:
@@ -180,26 +180,26 @@ export function applyPatch(doc, patches) {
   return true;
 }
 
-export function patchAdd(path, value) {
+export function Add(path, value) {
   return { op: "add", path: arrToPointer(path), value };
 }
 
-export function patchRemove(path) {
+export function Remove(path) {
   return { op: "remove", path: arrToPointer(path) };
 }
 
-export function patchReplace(path, value) {
+export function Replace(path, value) {
   return { op: "replace", path: arrToPointer(path), value };
 }
 
-export function patchMove(from, path) {
+export function Move(from, path) {
   return { op: "move", from: arrToPointer(from), path: arrToPointer(path) };
 }
 
-export function patchCopy(from, path) {
+export function Copy(from, path) {
   return { op: "copy", from: arrToPointer(from), path: arrToPointer(path) };
 }
 
-export function patchTest(path, value) {
+export function Test(path, value) {
   return { op: "test", path: arrToPointer(path), value };
 }

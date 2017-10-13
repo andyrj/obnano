@@ -1,3 +1,5 @@
+//import * as jsonPatch from "./patch";
+
 const stack = [];
 let actions = 0;
 const MAX_DEPTH = 100;
