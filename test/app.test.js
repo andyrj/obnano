@@ -91,7 +91,8 @@ test("app should trigger vnode life cycle events", t => {
   t.is(removeCount, 1);
 });
 
-test("app rendering should be debounced by requestAnimationFrame", t => {
+test.cb("app rendering should be debounced by requestAnimationFrame", t => {
+  global.requestAnimationFrame = setTimeout;
   let count = 0;
   const appStore = app({
     state: {
@@ -107,14 +108,16 @@ test("app rendering should be debounced by requestAnimationFrame", t => {
       return h("div", {}, [store.count]);
     }
   });
-  t.is(count, 1);
-  global.requestAnimationFrame = setTimeout;
-  appStore.increment();
-  appStore.increment();
-  appStore.increment();
-  appStore.increment();
   setTimeout(() => {
-    t.is(count, 2);
-    t.is(appStore.count, 4);
-  }, 10);
+    t.is(count, 1);
+    appStore.increment();
+    appStore.increment();
+    appStore.increment();
+    appStore.increment();
+    setTimeout(() => {
+      t.is(count, 2);
+      t.is(appStore.count, 4);
+    }, 1);
+    t.end();
+  }, 1);
 });
