@@ -4,7 +4,7 @@ import { autorun, Store } from "./observable";
 function hydrate(element) {
   return element
     ? {
-        tag: element.nodeName.toLowerCase(),
+        type: element.nodeName.toLowerCase(),
         props: {},
         children: [].map.call(element.childNodes, function(element) {
           return element.nodeType === 3 ? element.nodeValue : hydrate(element);

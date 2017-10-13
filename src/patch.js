@@ -252,7 +252,7 @@ export default function patchFactory(invoke) {
       return document.createTextNode(node);
     } else {
       // not surpporting svg in this draft...
-      const element = document.createElement(node.tag);
+      const element = document.createElement(node.type);
       if (node.props && node.props.oncreate) {
         invoke.push(function() {
           node.props.oncreate(element);
@@ -305,7 +305,7 @@ export default function patchFactory(invoke) {
         return element;
       } else if (typeof oldNode === "string" && typeof node === "string") {
         element.nodeValue = node;
-      } else if (oldNode.tag && node.tag && oldNode.tag === node.tag) {
+      } else if (oldNode.type && node.type && oldNode.type === node.type) {
         updateElement(element, oldNode.props, node.props);
         if (oldNode.children.length > 0 || node.children.length > 0) {
           diffChildren(element, oldNode.children, node.children);

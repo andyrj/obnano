@@ -90,3 +90,31 @@ test("app should trigger vnode life cycle events", t => {
   appStore.doRemove();
   t.is(removeCount, 1);
 });
+
+test("app rendering should be debounced by requestAnimationFrame", t => {
+  let count = 0;
+  const appStore = app({
+    state: {
+      count: 0
+    },
+    actions: {
+      increment() {
+        this.count++;
+      }
+    },
+    view(store) {
+      count++;
+      return h("div", {}, [store.count]);
+    }
+  });
+  t.is(count, 1);
+  global.requestAnimationFrame = setTimeout;
+  appStore.increment();
+  appStore.increment();
+  appStore.increment();
+  appStore.increment();
+  setTimeout(() => {
+    t.is(count, 2);
+    t.is(appStore.count, 4);
+  }, 10);
+});

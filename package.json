@@ -1,7 +1,7 @@
 {
   "name": "obnano",
   "version": "0.0.2",
-  "description": "minimalist vdom for a minimalist h() with an observable state tree",
+  "description": "minimalist vdom with an proxied observable state tree",
   "main": "dist/obnano.js",
   "jsnext:main": "src/index.js",
   "module": "src/index.js",
