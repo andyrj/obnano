@@ -96,7 +96,7 @@ test.cb("app rendering should be debounced by requestAnimationFrame", t => {
   let count = 0;
   const appStore = app({
     state: {
-      count: 0
+      count: observable(0)
     },
     actions: {
       increment() {

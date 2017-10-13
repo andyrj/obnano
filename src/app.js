@@ -26,10 +26,10 @@ export function app({ state, actions, view }, target) {
     const newNodes = view(store);
     patch(target, target.childNodes[0], oldNodes, newNodes);
     oldNodes = newNodes;
+    isRendering = false;
     while (invoke.length > 0) {
       invoke.shift()();
     }
-    isRendering = false;
   }
   oldNodes = hydrate(target.children[0]);
   autorun(() => {
