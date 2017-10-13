@@ -1,5 +1,5 @@
 import patchFactory from "./patch";
-import { autorun, Store } from "./observable";
+import { autorun } from "./observable";
 
 function hydrate(element) {
   return element
@@ -13,12 +13,20 @@ function hydrate(element) {
     : element;
 }
 
-export function app({ state, actions, view }, target) {
-  state = state || {};
-  actions = actions || {};
+/**
+ * app() renders vdom into a target in the browser document.  It only renders when 
+ * observable values in store are changed that are currently referenced in the view
+ * function.
+ * 
+ * @export
+ * @param {any} store - instance of Store(state, actions) 
+ * @param {any} view - view function that expects to receive store as it's only parameter
+ * @param {any} target - HTMLElement where this app() should render
+ * @returns store instance that was passed to app()
+ */
+export function app(store, view, target) {
   const invoke = [];
   const patch = patchFactory(invoke);
-  const store = Store(state, actions);
   let isRendering = false;
   let oldNodes;
   target = target || document.body;

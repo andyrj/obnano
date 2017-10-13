@@ -1,7 +1,5 @@
 import test from "ava";
-import { app } from "../src/app";
-import { h } from "../src/h";
-import { observable } from "../src/observable";
+import { app, h, observable, Store } from "../src";
 
 require("undom/register");
 global.requestAnimationFrame = cb => cb(Date.now());
@@ -11,19 +9,18 @@ test.beforeEach(() => {
 });
 
 test("app should return valid store object created from state, actions for interop", t => {
-  const appStore = app({
-    state: {
-      test: "test"
-    },
-    actions: {
-      change(val) {
-        this.test = val;
+  const appStore = app(
+    Store(
+      {
+        test: "test"
+      },{
+        change(val) {
+          this.test = val;
+        }
       }
-    },
-    view(store) {
-      return h("div");
-    }
-  });
+    ),
+    (store) => h("div")
+  );
   t.is(typeof appStore.change, "function");
   t.is(typeof appStore.test, "string");
 });
@@ -34,13 +31,12 @@ test("app should hydrate existing dom inside of target", t => {
   div1.appendChild(document.createTextNode("test"));
   div.appendChild(div1);
   document.body.appendChild(div);
-  const appStore = app({
-    view(store) {
-      return h("div", {}, [
-        h("div", {}, ["test"])
-      ]);
-    }
-  });
+  const appStore = app(
+    Store(),
+    (store) => h("div", {}, [
+      h("div", {}, ["test"])
+    ])
+  );
   t.is(document.body.firstChild.firstChild.firstChild.nodeValue, "test");
 });
 
@@ -48,24 +44,26 @@ test("app should trigger vnode life cycle events", t => {
   let createCount = 0;
   let updateCount = 0;
   let removeCount = 0;
-  const appStore = app({
-    state: {
-      create: observable(false),
-      update: observable(false),
-      remove: observable(false)
-    },
-    actions: {
-      doCreate() {
-        this.create = true;
+  const appStore = app(
+    Store(
+      {
+        create: observable(false),
+        update: observable(false),
+        remove: observable(false)
       },
-      doUpdate() {
-        this.update = true;
-      },
-      doRemove() {
-        this.remove = true;
+      {
+        doCreate() {
+          this.create = true;
+        },
+        doUpdate() {
+          this.update = true;
+        },
+        doRemove() {
+          this.remove = true;
+        }
       }
-    },
-    view(store) {
+    ),
+    (store) => {
       const children = [];
       const child = h("div", {
         class: "test",
@@ -82,7 +80,7 @@ test("app should trigger vnode life cycle events", t => {
       const parent = h("div", {}, children);
       return parent;
     }
-  });
+  );
   appStore.doCreate();
   t.is(createCount, 1);
   appStore.doUpdate();
@@ -95,20 +93,22 @@ test("app should trigger vnode life cycle events", t => {
 test.cb("app rendering should be debounced by requestAnimationFrame", t => {
   global.requestAnimationFrame = cb => setTimeout(cb, 100);
   let counter = 0;
-  const appStore = app({
-    state: {
-      count: observable(0)
-    },
-    actions: {
-      increment() {
-        this.count++;
+  const appStore = app(
+    Store(
+      {
+        count: observable(0)
+      },
+      {
+        increment() {
+          this.count++;
+        }
       }
-    },
+    ),
     view(store) {
       counter++;
       return h("div", {}, [store.count]);
     }
-  });
+  );
   setTimeout(() => {
     t.is(counter, 1);
     appStore.increment();
