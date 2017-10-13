@@ -213,7 +213,9 @@ export function observable(value) {
   const observers = [];
   let disposed = false;
   const data = function(arg) {
-    if (disposed) return;
+    if (disposed) {
+      return;
+    }
     if (arg == null) {
       if (stack.length > 0) {
         stack[stack.length - 1].addDependency(data);
@@ -271,13 +273,13 @@ export function computed(thunk, context) {
     const result = context != null ? thunk.call(context) : thunk();
     current(result);
   };
-  let dispose = autorun(computation, true);
+  const dispose = autorun(computation, true);
   function wrapper() {
     if (arguments.length > 0) {
       throw new RangeError("computed values cannot be set arbitrarily");
     } else {
       if (disposed) {
-        return undefined;
+        return;
       }
       return current();
     }
@@ -286,7 +288,6 @@ export function computed(thunk, context) {
   wrapper.dispose = function() {
     current.dispose();
     dispose();
-    dispose = undefined;
     disposed = true;
   };
   Object.freeze(wrapper);
