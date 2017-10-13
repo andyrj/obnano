@@ -1,4 +1,4 @@
-function gatherSane(children, child) {
+function gather(children, child) {
   if (child != null && child !== true && child !== false) {
     children.push(typeof child === "number" ? child + "" : child);
   }
@@ -13,16 +13,16 @@ export function h(type, props = {}) {
       let i = 0;
       const arrLen = arr.length;
       while (i < arrLen) {
-        gatherSane(children, arr[i]);
+        gather(children, arr[i]);
         i++;
       }
     } else {
-      gatherSane(children, arr);
+      gather(children, arr);
     }
   } else if (len > 3) {
     let i = 2;
     while (i < len) {
-      gatherSane(children, arguments[i]);
+      gather(children, arguments[i]);
       i++;
     }
   }
