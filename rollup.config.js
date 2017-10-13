@@ -11,7 +11,7 @@ export default {
   plugins: [
     babel({
       babelrc: false,
-      presets: [["es2015", { modules: false }]],
+      presets: [["env", { modules: false }]],
       plugins: []
     })
   ],
