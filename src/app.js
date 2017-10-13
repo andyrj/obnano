@@ -22,7 +22,7 @@ function hydrate(element) {
  * @param {any} store - instance of Store(state, actions) 
  * @param {any} view - view function that expects to receive store as it's only parameter
  * @param {any} target - HTMLElement where this app() should render
- * @returns store instance that was passed to app()
+ * @returns {store} store instance that was passed to app()
  */
 export function app(store, view, target) {
   const invoke = [];

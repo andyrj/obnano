@@ -10,7 +10,7 @@ function gather(children, child) {
  * @export
  * @param {any} type 
  * @param {any} [props={}] 
- * @returns 
+ * @returns {vnode}
  */
 export function h(type, props = {}) {
   const children = [];

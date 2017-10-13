@@ -87,7 +87,7 @@ function extendArray(val, observers) {
  * @param {any} [state={}] - Object that defines your state, should be made of 
  *   unobserved values, observables, and computed values.
  * @param {any} [actions={}] - Object that defines actions that operate on your state.
- * @returns 
+ * @returns {store} Proxy to use observables/computed transparently as if POJO.
  */
 export function Store(state = {}, actions = {}) {
   const local = {};
@@ -162,7 +162,7 @@ export function Store(state = {}, actions = {}) {
  * @export
  * @param {any} fn - the function that defines how to modify observables.
  * @param {any} context - the "this" context for this action.
- * @returns 
+ * @returns {action} function that runs mutations as a batched transaction.
  */
 export function action(fn, context) {
   const func = function() {
@@ -203,7 +203,7 @@ export function action(fn, context) {
  * 
  * @export
  * @param {any} value - value to store in the observable. 
- * @returns function that can be used to set and get your observed value.
+ * @returns {observable} function that can be used to set and get your observed value.
  */
 export function observable(value) {
   const observers = [];
@@ -257,7 +257,7 @@ export function observable(value) {
  * @export
  * @param {any} thunk - function that determines the computed value.
  * @param {any} context - context for the thunk.
- * @returns function that can be used to retrieve the latest computed value.
+ * @returns {computed} function that can be used to retrieve the latest computed value.
  */
 export function computed(thunk, context) {
   const current = observable(undefined);
@@ -302,7 +302,7 @@ function flush(arr) {
  * @param {any} thunk - function to execute that depends on observables/computed values.
  * @param {boolean} [computed=false] - is used to determine if 
  *   this autorun is being used for a computed value.
- * @returns a function that can be used to dispose of this autorun.
+ * @returns {dispose } function that can be used to dispose of this autorun.
  */
 export function autorun(thunk, computed = false) {
   const observing = [];
