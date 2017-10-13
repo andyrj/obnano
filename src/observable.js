@@ -86,7 +86,8 @@ function extendArray(val, observers) {
  * @export
  * @param {any} [state={}] - Object that defines your state, should be made of 
  *   unobserved values, observables, and computed values.
- * @param {any} [actions={}] - Object that defines actions that operate on your state.
+ * @param {any} [actions={}] - Object that defines actions that operate on 
+ *   your state.
  * @returns {store} Proxy to use observables/computed transparently as if POJO.
  */
 export function Store(state = {}, actions = {}) {
@@ -121,7 +122,7 @@ export function Store(state = {}, actions = {}) {
           target[name] = value;
         }
       } else {
-        target[name] = value; // user must be explicit in setting values observable/computed/action
+        target[name] = value;
       }
       return true;
     },
@@ -156,8 +157,9 @@ export function Store(state = {}, actions = {}) {
 }
 
 /**
- * action - Batches changes to observables and computed values so that they are computed
- * without glitches and without triggering autoruns with stale data.
+ * action - Batches changes to observables and computed values so that 
+ * they are computed without glitches and without triggering autoruns 
+ * with stale data.
  * 
  * @export
  * @param {any} fn - the function that defines how to modify observables.
@@ -199,18 +201,20 @@ export function action(fn, context) {
 }
 
 /**
- * observable - function that creates a new observable value that is stored in a function closure.
+ * observable - function that creates a new observable value that is stored 
+ * in a function closure.
  * 
  * @export
  * @param {any} value - value to store in the observable. 
- * @returns {observable} function that can be used to set and get your observed value.
+ * @returns {observable} function that can be used to set and get your 
+ *   observed value.
  */
 export function observable(value) {
   const observers = [];
   let disposed = false;
   const data = function(arg) {
     if (disposed) return;
-    if (arg === undefined) {
+    if (arg == null) {
       if (stack.length > 0) {
         stack[stack.length - 1].addDependency(data);
       }
@@ -257,7 +261,8 @@ export function observable(value) {
  * @export
  * @param {any} thunk - function that determines the computed value.
  * @param {any} context - context for the thunk.
- * @returns {computed} function that can be used to retrieve the latest computed value.
+ * @returns {computed} function that can be used to retrieve the 
+ *   latest computed value.
  */
 export function computed(thunk, context) {
   const current = observable(undefined);
@@ -299,7 +304,8 @@ function flush(arr) {
  * or computed dependencies are updated.
  * 
  * @export
- * @param {any} thunk - function to execute that depends on observables/computed values.
+ * @param {any} thunk - function to execute that depends on 
+ *   observables/computed values.
  * @param {boolean} [computed=false] - is used to determine if 
  *   this autorun is being used for a computed value.
  * @returns {dispose } function that can be used to dispose of this autorun.

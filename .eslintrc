@@ -40,7 +40,7 @@
     "no-unused-vars": 2,
     "consistent-return": 0,
     "max-len": [
-      "error", 100
+      "error", 80
     ],
     "space-before-function-paren": 0,
     "max-statements": [

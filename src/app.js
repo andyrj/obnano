@@ -14,13 +14,13 @@ function hydrate(element) {
 }
 
 /**
- * app() renders vdom into a target in the browser document.  It only renders when 
- * observable values in store are changed that are currently referenced in the view
- * function.
+ * app() renders vdom into a target in the browser document.  It only 
+ * renders when observable values in store are changed that are 
+ * currently referenced in the view function.
  * 
  * @export
  * @param {any} store - instance of Store(state, actions) 
- * @param {any} view - view function that expects to receive store as it's only parameter
+ * @param {any} view - view function with store as only parameter
  * @param {any} target - HTMLElement where this app() should render
  * @returns {store} store instance that was passed to app()
  */

@@ -1,11 +1,7 @@
-/*
-simple json patch implementation that mutates json in place which will work with our store proxy...
-adheres to RFC6902
-*/
 function add(doc, path, value) {
   const { parent, prop } = walkPath(doc, path);
   if (Array.isArray(parent)) {
-    let index = parseInt(prop);
+    const index = parseInt(prop);
     if (isNaN(index)) {
       return false;
     }
@@ -19,7 +15,7 @@ function add(doc, path, value) {
 function remove(doc, path) {
   const { parent, prop } = walkPath(doc, path);
   if (Array.isArray(parent)) {
-    let index = parseInt(prop);
+    const index = parseInt(prop);
     if (isNaN(index)) {
       return false;
     }
@@ -123,7 +119,7 @@ function walkPath(doc, arr) {
   const prop = clone.pop();
   let parent;
   while (clone.length > 0) {
-    if (parent === undefined) {
+    if (parent == null) {
       parent = doc[clone.shift()];
     } else {
       parent = parent[clone.shift()];
@@ -134,7 +130,7 @@ function walkPath(doc, arr) {
 
 function validatePatch(patch, keys) {
   keys.forEach(key => {
-    if (patch[key] === undefined) {
+    if (patch[key] == null) {
       throw new RangeError("Invalid patch missing required key: " + key);
     }
   });
@@ -145,7 +141,7 @@ export function applyPatch(doc, patches) {
   const len = patches.length;
   for (; i < len; i++) {
     const patch = patches[i];
-    if (patch.op === undefined) {
+    if (patch.op == null) {
       throw new RangeError("Invalid patch instruction, missing op");
     }
     let result = false;

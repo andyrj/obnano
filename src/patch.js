@@ -7,7 +7,8 @@ function filterLifecycles(k) {
  *   to handle any lifecycle events held in the vdom.
  * 
  * @export
- * @param {any} invoke - Array used to pass thunks created during patch, for lifecycle events.
+ * @param {any} invoke - Array used to pass thunks created during patch, 
+ *   for lifecycle events.
  * @returns - patch(parent, element, oldNode, node)
  */
 export default function patchFactory(invoke) {
@@ -29,7 +30,7 @@ export default function patchFactory(invoke) {
       i = 0;
       for (; i < oldPropKeys.length; i++) {
         const key = oldPropKeys[i];
-        if (map[key] === undefined) {
+        if (map[key] == null) {
           setData(element, key);
         }
       }
@@ -305,7 +306,7 @@ export default function patchFactory(invoke) {
 
   function patch(parent, element, oldNode, node) {
     if (oldNode == null && node == null) {
-      throw new RangeError("oldNode and node cannot both be null"); // pointless call to patch...
+      throw new RangeError("oldNode and node cannot both be null");
     } else if (oldNode == null && node != null) {
       element = parent.insertBefore(createElement(node), element);
     } else if (oldNode != null && node != null) {

@@ -329,7 +329,7 @@ test("observable array should return proxy that notifies observers on set", t =>
   autorun(() => {
     count++;
     sum = arr().reduce((acc, val) => {
-      if (val === undefined) {
+      if (val == null) {
         return acc;
       } else if (val.__type === 0) {
         return acc + val();
@@ -361,7 +361,7 @@ test("observable array should notify observers on mutator function execution", t
   autorun(() => {
     count++;
     sum = arr().reduce((acc, val) => {
-      if (val === undefined) {
+      if (val == null) {
         return acc;
       } else if (val.__type === "observable") {
         return acc + val();
