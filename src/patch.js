@@ -108,7 +108,7 @@ export default function patchFactory(invoke) {
     for (; i < nodesLen; i++) {
       const child = nodes[i];
       const key = child.props.key;
-      if (moveMap[key] !== undefined) {
+      if (moveMap[key] != null) {
         throw new RangeError("Error: duplicate keys encountered");
       }
       const nodeEntry = { index: i, child };
@@ -132,7 +132,7 @@ export default function patchFactory(invoke) {
     for (; i < oldNodesLen; i++) {
       const child = oldNodes[i];
       const key = child.props.key;
-      if (moveMap[key] !== undefined) {
+      if (moveMap[key] != null) {
         moveMap[key].oNode = { index: i, child };
         delete addMap[key];
       } else {
@@ -158,7 +158,7 @@ export default function patchFactory(invoke) {
     let i = 0;
     for (; i < oldNodes.length; i++) {
       const key = oldNodes[i].props.key;
-      if (moveMap[key] !== undefined) {
+      if (moveMap[key] != null) {
         const move = moveMap[key];
         const temp = parent.childNodes[i];
         patch(parent, temp, move.oNode.child, move.nNode.child);
@@ -181,7 +181,7 @@ export default function patchFactory(invoke) {
     let i = 0;
     for (; i < nodesLen; i++) {
       const key = nodes[i].props.key;
-      if (addMap[key] !== undefined) {
+      if (addMap[key] != null) {
         if (i < oldNodes.length) {
           oldNodes.splice(i, 0, nodes[i]);
           parent.insertBefore(createElement(nodes[i]), parent.childNodes[i]);

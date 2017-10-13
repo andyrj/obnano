@@ -43,7 +43,7 @@ function notifyObservers(obs) {
 
 function extendArray(val, observers) {
   const arrHandler = {
-    get: function(target, name) {
+    get(target, name) {
       if (arrayMutators.indexOf(name) > -1) {
         return function() {
           const res = Array.prototype[name].apply(target, arguments);
@@ -54,10 +54,10 @@ function extendArray(val, observers) {
         return target[name];
       }
     },
-    set: function(target, name, value) {
-      if (target[name] !== undefined) {
+    set(target, name, value) {
+      if (target[name] != null) {
         if (target[name].__type === OBSERVABLE) {
-          if (value !== undefined && value.__type === OBSERVABLE) {
+          if (value != null && value.__type === OBSERVABLE) {
             target[name](value());
           } else {
             target[name](value);
@@ -79,6 +79,52 @@ function extendArray(val, observers) {
   return new Proxy(val, arrHandler);
 }
 
+const storeHandler = {
+  get(target, name) {
+    if (name in target) {
+      if (
+        target[name].__type === OBSERVABLE ||
+        target[name].__type === COMPUTED
+      ) {
+        return target[name]();
+      }
+      return target[name];
+    } else {
+      return;
+    }
+  },
+  set(target, name, value) {
+    if (name in target) {
+      if (target[name].__type === OBSERVABLE) {
+        if (value.__type === OBSERVABLE) {
+          target[name](value());
+        } else {
+          target[name](value);
+        }
+      } else {
+        if (target[name].__type === COMPUTED) {
+          target[name].dispose();
+        }
+        target[name] = value;
+      }
+    } else {
+      target[name] = value;
+    }
+    return true;
+  },
+  deleteProperty(target, name) {
+    if (name in target) {
+      if (target[name].dispose != null) {
+        target[name].dispose();
+      }
+      delete target[name];
+      return true;
+    } else {
+      return false;
+    }
+  }
+};
+
 /**
  * Store - creates a proxy wrapper that allows observables to be used as if they
  * were plain javascript objects.
@@ -92,53 +138,7 @@ function extendArray(val, observers) {
  */
 export function Store(state = {}, actions = {}) {
   const local = {};
-  let proxy;
-  const handler = {
-    get(target, name) {
-      if (name in target) {
-        if (
-          target[name].__type === OBSERVABLE ||
-          target[name].__type === COMPUTED
-        ) {
-          return target[name]();
-        }
-        return target[name];
-      } else {
-        return undefined;
-      }
-    },
-    set(target, name, value) {
-      if (name in target) {
-        if (target[name].__type === OBSERVABLE) {
-          if (value.__type === OBSERVABLE) {
-            target[name](value());
-          } else {
-            target[name](value);
-          }
-        } else {
-          if (target[name].__type === COMPUTED) {
-            target[name].dispose();
-          }
-          target[name] = value;
-        }
-      } else {
-        target[name] = value;
-      }
-      return true;
-    },
-    deleteProperty(target, name) {
-      if (name in target) {
-        if (target[name].dispose !== undefined) {
-          target[name].dispose();
-        }
-        delete target[name];
-        return true;
-      } else {
-        return false;
-      }
-    }
-  };
-  proxy = new Proxy(local, handler);
+  const proxy = new Proxy(local, storeHandler);
   Object.keys(state).forEach(key => {
     if (typeof state[key] === "function" && state[key].__type !== OBSERVABLE) {
       proxy[key] = computed(state[key], proxy);
@@ -147,7 +147,7 @@ export function Store(state = {}, actions = {}) {
     }
   });
   Object.keys(actions).forEach(key => {
-    if (proxy[key] !== undefined) {
+    if (proxy[key] != null) {
       throw new RangeError("action key overlaps with existing state key");
     }
     proxy[key] = action(actions[key], proxy);
@@ -314,12 +314,12 @@ export function autorun(thunk, computed = false) {
   const observing = [];
   let disposed = false;
   const reaction = {
-    addDependency: function(obs) {
+    addDependency(obs) {
       if (observing.indexOf(obs) === -1) {
         observing.push(obs);
       }
     },
-    run: function() {
+    run() {
       if (!disposed) {
         stack.push(this);
         observing.splice(0).forEach(o => o.unsub(this));
