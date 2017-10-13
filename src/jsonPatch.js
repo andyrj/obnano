@@ -140,6 +140,15 @@ function validatePatch(patch, keys) {
   });
 }
 
+/**
+ * Mutates the json doc passed as first argument via the instructions described
+ * by patches.
+ * 
+ * @export
+ * @param {any} doc - json object
+ * @param {any} patches - Array of json patch objects 
+ * @returns 
+ */
 export function applyPatch(doc, patches) {
   let i = 0;
   const len = patches.length;
@@ -184,26 +193,73 @@ export function applyPatch(doc, patches) {
   return true;
 }
 
+/**
+ * patchAdd - creates a json patch add instruction.
+ * 
+ * @export
+ * @param {any} path - Array that defines a path.
+ * @param {any} value - Value to store at path.
+ * @returns 
+ */
 export function patchAdd(path, value) {
   return { op: "add", path: arrToPointer(path), value };
 }
 
+/**
+ * patchRemove - creates a json patch remove instruction.
+ * 
+ * @export
+ * @param {any} path - Array that defines a path.
+ * @returns 
+ */
 export function patchRemove(path) {
   return { op: "remove", path: arrToPointer(path) };
 }
 
+/**
+ * patchReplace - creates a json patch replace instruction.
+ * 
+ * @export
+ * @param {any} path - Array that defines a path.
+ * @param {any} value - Value to store at path.
+ * @returns 
+ */
 export function patchReplace(path, value) {
   return { op: "replace", path: arrToPointer(path), value };
 }
 
+/**
+ * patchMove - creates a json patch move instruction.
+ * 
+ * @export
+ * @param {any} from - Array that defines a path. 
+ * @param {any} path - Array taht defines a path.
+ * @returns 
+ */
 export function patchMove(from, path) {
   return { op: "move", from: arrToPointer(from), path: arrToPointer(path) };
 }
 
+/**
+ * pathCopy - creates a json patch copy instruction.
+ * 
+ * @export
+ * @param {any} from - Array that defines a path.
+ * @param {any} path - Array that defines a path.
+ * @returns 
+ */
 export function patchCopy(from, path) {
   return { op: "copy", from: arrToPointer(from), path: arrToPointer(path) };
 }
 
+/**
+ * patchTest - creates a json patch test instruction.
+ * 
+ * @export
+ * @param {any} path - Array that defines a path. 
+ * @param {any} value - Value to test for at path.
+ * @returns 
+ */
 export function patchTest(path, value) {
   return { op: "test", path: arrToPointer(path), value };
 }

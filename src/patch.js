@@ -2,6 +2,14 @@ function filterLifecycles(k) {
   return k !== "oncreate" && k !== "onupdate" && k !== "onremove";
 }
 
+/**
+ * patchFactory - generates an instance of patch which is passed an invoke array
+ *   to handle any lifecycle events held in the vdom.
+ * 
+ * @export
+ * @param {any} invoke - Array used to pass thunks created during patch, for lifecycle events.
+ * @returns - patch(parent, element, oldNode, node)
+ */
 export default function patchFactory(invoke) {
   function diffAttributes(element, oldProps, newProps) {
     const oldPropKeys = Object.keys(oldProps).filter(filterLifecycles);

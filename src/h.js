@@ -4,6 +4,14 @@ function gather(children, child) {
   }
 }
 
+/**
+ * h() supports JSX and direct usage and outputs a vnode.
+ * 
+ * @export
+ * @param {any} type 
+ * @param {any} [props={}] 
+ * @returns 
+ */
 export function h(type, props = {}) {
   const children = [];
   const len = arguments.length;

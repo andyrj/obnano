@@ -79,6 +79,16 @@ function extendArray(val, observers) {
   return new Proxy(val, arrHandler);
 }
 
+/**
+ * Store - creates a proxy wrapper that allows observables to be used as if they
+ * were plain javascript objects.
+ * 
+ * @export
+ * @param {any} [state={}] - Object that defines your state, should be made of 
+ *   unobserved values, observables, and computed values.
+ * @param {any} [actions={}] - Object that defines actions that operate on your state.
+ * @returns 
+ */
 export function Store(state = {}, actions = {}) {
   const local = {};
   let proxy;
@@ -145,6 +155,15 @@ export function Store(state = {}, actions = {}) {
   return proxy;
 }
 
+/**
+ * action - Batches changes to observables and computed values so that they are computed
+ * without glitches and without triggering autoruns with stale data.
+ * 
+ * @export
+ * @param {any} fn - the function that defines how to modify observables.
+ * @param {any} context - the "this" context for this action.
+ * @returns 
+ */
 export function action(fn, context) {
   const func = function() {
     const args = arguments;
@@ -179,6 +198,13 @@ export function action(fn, context) {
   return func;
 }
 
+/**
+ * observable - function that creates a new observable value that is stored in a function closure.
+ * 
+ * @export
+ * @param {any} value - value to store in the observable. 
+ * @returns function that can be used to set and get your observed value.
+ */
 export function observable(value) {
   const observers = [];
   let disposed = false;
@@ -224,6 +250,15 @@ export function observable(value) {
   return data;
 }
 
+/**
+ * computed - creates a computed value that will automatically update
+ * when the observables it depends upon are updated.
+ * 
+ * @export
+ * @param {any} thunk - function that determines the computed value.
+ * @param {any} context - context for the thunk.
+ * @returns function that can be used to retrieve the latest computed value.
+ */
 export function computed(thunk, context) {
   const current = observable(undefined);
   let disposed = false;
@@ -259,6 +294,16 @@ function flush(arr) {
   }
 }
 
+/**
+ * autorun - thunk that is executed any time any of it's observable
+ * or computed dependencies are updated.
+ * 
+ * @export
+ * @param {any} thunk - function to execute that depends on observables/computed values.
+ * @param {boolean} [computed=false] - is used to determine if 
+ *   this autorun is being used for a computed value.
+ * @returns a function that can be used to dispose of this autorun.
+ */
 export function autorun(thunk, computed = false) {
   const observing = [];
   let disposed = false;
