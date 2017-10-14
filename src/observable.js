@@ -164,6 +164,9 @@ export function Store(state = {}, actions = {}) {
   Object.keys(state).forEach(key => {
     if (typeof state[key] === "function" && state[key].__type !== OBSERVABLE) {
       proxy[key] = computed(state[key], proxy);
+    } else if (typeof state[key] === "object" && state[key] !== null) {
+      proxy[key] = Store(state[key], actions[key]);
+      delete actions[key];
     } else {
       proxy[key] = state[key];
     }
