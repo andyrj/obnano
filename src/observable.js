@@ -177,6 +177,31 @@ export function Store(state = {}, actions = {}) {
     }
     proxy[key] = action(actions[key], proxy);
   });
+  proxy.snapshot = computed(() => {
+    const result = {};
+    for (let key in proxy) {
+      const p = proxy[key];
+      const t = p.__type;
+      if (t === OBSERVABLE) {
+        result[key] = p;
+      } else if (t === STORE) {
+        result[key] = p.snapshot();
+      }
+    }
+    return result;
+  });
+  proxy.restore = action(snap => {
+    Object.keys(snap).forEach(k => {
+      const t = proxy[k].__type;
+      const sn = snap[k];
+      const s = typeof snap[k];
+      if (t === OBSERVABLE) {
+        proxy[k] = snap[k];
+      } else if (t === STORE && s === "object" && sn !== null) {
+        proxy[k].restore(sn);
+      }
+    });
+  });
   proxy.__type = STORE;
   return proxy;
 }
