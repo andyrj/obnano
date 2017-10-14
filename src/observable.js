@@ -274,6 +274,9 @@ export function observable(value) {
     disposed = true;
     flush(observers);
   };
+  data.hasObservers = function() {
+    return observers.length > 0;
+  };
   Object.freeze(data);
   return data;
 }
@@ -290,10 +293,20 @@ export function observable(value) {
  */
 export function computed(thunk, context) {
   const current = observable(undefined);
+  let init = true;
   let disposed = false;
+  let delayedReaction = null;
   const computation = function() {
-    const result = context != null ? thunk.call(context) : thunk();
-    current(result);
+    if (current.hasObservers() || init) {
+      init = false;
+      const result = thunk.call(context);
+      current(result);
+    } else {
+      delayedReaction = function() {
+        const result = thunk.call(context);
+        current(result);
+      };
+    }
   };
   const dispose = autorun(computation, true);
   function wrapper() {
@@ -302,6 +315,10 @@ export function computed(thunk, context) {
     } else {
       if (disposed) {
         return;
+      }
+      if (delayedReaction != null) {
+        delayedReaction();
+        delayedReaction = null;
       }
       return current();
     }
