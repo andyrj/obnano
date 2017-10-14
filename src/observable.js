@@ -5,9 +5,9 @@ let actions = 0;
 const MAX_DEPTH = 100;
 const OBSERVABLE = 0;
 const COMPUTED = 1;
-const AUTORUN = 2;
+const AUTORUN = 4;
 const ACTION = 3;
-const STORE = 4;
+const STORE = 2;
 let depth = MAX_DEPTH;
 const transaction = { o: [], c: [], a: [] };
 
@@ -128,9 +128,9 @@ const storeHandler = {
   has(target, name) {
     if (name in target) {
       const type = target[name].__type;
-      if (type < 2) {
+      if (type < 3) {
         return true;
-      } else if (type > 2) {
+      } else if (type >= 3) {
         return false;
       } else {
         return true;
