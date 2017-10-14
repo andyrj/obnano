@@ -124,6 +124,26 @@ const storeHandler = {
     } else {
       return false;
     }
+  },
+  has(target, name) {
+    if (name in target) {
+      const type = target[name].__type;
+      if (type < 2) {
+        return true;
+      } else if (type > 2) {
+        return false;
+      } else {
+        return true;
+      }
+    } else {
+      return false;
+    }
+  },
+  ownKeys(target) {
+    return Reflect.ownKeys(target).filter(k => {
+      const type = target[k].__type;
+      return type === undefined || type !== 3;
+    });
   }
 };
 
