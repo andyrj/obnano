@@ -181,7 +181,7 @@ export function Store(state = {}, actions = {}) {
   });
   proxy.snapshot = computed(() => {
     const result = {};
-    for (let key in proxy) {
+    for (const key in proxy) {
       const p = proxy[key];
       const t = p.__type;
       if (t === OBSERVABLE) {
