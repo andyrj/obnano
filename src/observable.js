@@ -10,6 +10,7 @@ const ACTION = 3;
 const STORE = 2;
 let depth = MAX_DEPTH;
 const transaction = { o: [], c: [], a: [] };
+const patchQueue = [];
 
 const arrayMutators = [
   "splice",
@@ -42,7 +43,7 @@ function notifyObservers(obs) {
     }
   });
 }
-
+// TODO: need to pass path of the array...
 function extendArray(val, observers) {
   const arrHandler = {
     get(target, name) {
@@ -68,10 +69,10 @@ function extendArray(val, observers) {
           target[name] = value;
         }
       } else {
-        if (!isNaN(parseInt(name))) {
-          target[name] = value;
-        } else {
+        if (isNaN(parseInt(name))) {
           return false;
+        } else {
+          target[name] = value;
         }
       }
       notifyObservers(observers);
@@ -81,6 +82,7 @@ function extendArray(val, observers) {
   return new Proxy(val, arrHandler);
 }
 
+// TODO: on set & delete path needs to be used to create patch...
 const storeHandler = {
   get(target, name) {
     if (name in target) {
@@ -128,9 +130,9 @@ const storeHandler = {
   has(target, name) {
     if (name in target) {
       const type = target[name].__type;
-      if (type < 3) {
+      if (type < ACTION) {
         return true;
-      } else if (type >= 3) {
+      } else if (type >= ACTION) {
         return false;
       } else {
         return true;
@@ -142,7 +144,7 @@ const storeHandler = {
   ownKeys(target) {
     return Reflect.ownKeys(target).filter(k => {
       const type = target[k].__type;
-      return type === undefined || type !== 3;
+      return !type || type >= ACTION;
     });
   }
 };
@@ -311,7 +313,8 @@ export function observable(value) {
 
 /**
  * computed - creates a computed value that will automatically update
- * when the observables it depends upon are updated.
+ * when the observables it depends upon are updated.  It will also
+ * only evaluate on retrieval if not being actively observed.
  * 
  * @export
  * @param {any} thunk - function that determines the computed value.
@@ -324,15 +327,17 @@ export function computed(thunk, context) {
   let init = true;
   let disposed = false;
   let delayedReaction = null;
+  function reaction() {
+    const result = thunk.call(context);
+    current(result);
+  }
   const computation = function() {
     if (current.hasObservers() || init) {
       init = false;
-      const result = thunk.call(context);
-      current(result);
+      reaction();
     } else {
       delayedReaction = function() {
-        const result = thunk.call(context);
-        current(result);
+        reaction();
       };
     }
   };
