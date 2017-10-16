@@ -2,18 +2,17 @@ import test from "ava";
 import { app, h, observable, Store } from "../src";
 
 require("undom/register");
-global.requestAnimationFrame = cb => cb(Date.now());
 
 test.beforeEach(() => {
   document.body = document.createElement("body");
+  //global.requestAnimationFrame = cb => cb(Date.now());  
 });
 
 test("app should return valid store object created from state, actions for interop", t => {
   const appStore = app(
     Store(
       {
-        test: "test"
-      },{
+        test: "test",
         change(val) {
           this.test = val;
         }
@@ -49,9 +48,7 @@ test("app should trigger vnode life cycle events", t => {
       {
         create: observable(false),
         update: observable(false),
-        remove: observable(false)
-      },
-      {
+        remove: observable(false),
         doCreate() {
           this.create = true;
         },
@@ -89,10 +86,17 @@ test("app should trigger vnode life cycle events", t => {
   t.is(removeCount, 1);
 });
 
+/*
 test("app rendering should be debounced by requestAnimationFrame", t => {
   let rAFcb;
+  let rAFcount = 0;
   global.requestAnimationFrame = function(cb) {
-    rAFcb = cb;
+    rAFcount++;
+    rAFcb = () => {
+      cb(Date.now());
+      rAFcb = undefined;
+      console.log(global.requestAnimationFrame.toString());
+    }
   }; 
   let counter = 0;
   const appStore = app(
@@ -112,16 +116,47 @@ test("app rendering should be debounced by requestAnimationFrame", t => {
     }
   );
   rAFcb();
-  rAFcb = null;
+  t.is(rAFcount, 1);
   t.is(counter, 1);
   appStore.increment();
+  t.is(document.body.firstChild.firstChild.nodeValue, "0");
   t.is(appStore.count, 1);
   appStore.increment();
   t.is(appStore.count, 2);
+  t.is(document.body.firstChild.firstChild.nodeValue, "0");
   appStore.increment();
   t.is(appStore.count, 3);
+  t.is(document.body.firstChild.firstChild.nodeValue, "0");
   rAFcb();
-  rAFcb = null;
+  t.is(rAFcount, 2);
+  //rAFcb = null;
   t.is(counter, 2);
+  t.is(document.body.firstChild.firstChild.nodeValue, "3");
   t.is(appStore.count, 3);
+});
+*/
+
+test("verify that view is rendered when observables are updated as expected", t => {
+  let counter = 0;
+  function check(store, num) {
+    t.is(store.count, num);
+    t.is(counter, store.count);
+    t.is(document.body.firstChild.firstChild.nodeValue, store.count.toString()); 
+  }
+  const appStore = app(
+    Store(
+      {
+        count: observable(1)
+      }
+    ), 
+    store => {
+      counter++;
+      return h("div", {}, [store.count]);
+    }
+  );
+  check(appStore, 1);
+  appStore.count = 2;
+  check(appStore, 2);
+  appStore.count = 3;
+  check(appStore, 3);
 });

@@ -137,11 +137,6 @@ test("Store should allow unobserved data access and update like normal", t => {
   t.is(store.first, "test");
 });
 
-test("Store should return undefined when trying to access key that has not been set", t => {
-  const store = Store({});
-  t.is(store.test, undefined);
-});
-
 test("Store should replace observable transparently", t => {
   const store = Store({
     first: observable("Andy")
@@ -151,6 +146,11 @@ test("Store should replace observable transparently", t => {
   t.is(store.first, "Test");
   store.first = "boom";
   t.is(store.first, "boom");
+});
+
+test("Store should return undefined when trying to access key that has not been set", t => {
+  const store = Store({});
+  t.is(store.test, undefined);
 });
 
 test("Store should work with delete", t => {
@@ -192,31 +192,8 @@ test("Store should allow updating observable and unobservable values transparent
   t.is(store.unob, "456");
 });
 
-test("Store should dispose of and replace computed if user tries to set it", t => {
-  const store = Store({
-    first: observable("Andy"),
-    last: observable("Johnson"),
-    fullName: function() {
-      return `${this.first} ${this.last}`
-    }
-  });
-
-  t.is(store.fullName, "Andy Johnson");
-  store.fullName = computed(function() {
-    return `${this.first} ${this.first}`;
-  }, store);
-  t.is(store.fullName, "Andy Andy");
-});
-
-test("Store should handle actions being provided", t => {
-  const store = Store({count: 0}, {increment: function() {
-    this.count++;
-  }});
-  t.is(typeof store.increment, "function");
-});
-
 test("Store actions should be able to mutate state", t => {
-  const store = Store({count: 0}, {increment: function() {
+  const store = Store({count: 0, increment: function() {
     this.count++;
   }});
   store.increment();
@@ -379,19 +356,6 @@ test("store should throw if given state and action with overlapping key", t => {
   t.throws(() => {
     const store = Store({test: "test"}, {test(){}});
   });
-});
-
-// testing a bug condition
-test("autorun should be triggered by simple observable update", t => {
-  const test = observable("test");
-  let count = 0;
-  autorun(() => {
-    count++;
-    let temp = test();
-  });
-  t.is(count, 1);
-  test("2");
-  t.is(count, 2);
 });
 
 /* need to fix this test...

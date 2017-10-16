@@ -23,7 +23,10 @@ const arrayMutators = [
 ];
 
 function notifyObservers(obs) {
+  //console.log("observers:");
+  //console.log(obs);
   obs.forEach(o => {
+    //console.log(o.run.toString());
     if (actions === 0) {
       o.run();
     } else {
@@ -94,8 +97,20 @@ function emitPatches(listeners = []) {
   }
 }
 
-const storeHandlerFactory = function(path, listeners) {
-  return {
+/**
+ * Store - creates a proxy wrapper that allows observables to be used as if they
+ * were plain javascript objects.
+ * 
+ * @export
+ * @param {any} [state={}] - Object that defines your state/actions, 
+ *   should be made of unobserved values, observables, computed, and actions.
+ * @param {any} [path=[]] - Array of paths that lead to this Store...
+ * @returns {store} Proxy to use observables/computed transparently as if POJO.
+ */
+export function Store(state = {}, path = []) {
+  let proxy;
+  const listeners = [];
+  const storeHandler = {
     get(target, name) {
       if (name in target) {
         if (
@@ -110,15 +125,20 @@ const storeHandlerFactory = function(path, listeners) {
       }
     },
     set(target, name, value) {
+      const v = value ? value.__type : undefined;
+      if (v === COMPUTED || v === ACTION) {
+        value.context(proxy);
+      }
       if (name in target) {
-        if (target[name].__type === OBSERVABLE) {
-          if (value.__type === OBSERVABLE) {
+        const t = target[name].__type;
+        if (t === OBSERVABLE) {
+          if (v === OBSERVABLE) {
             target[name](value());
           } else {
             target[name](value);
           }
         } else {
-          if (target[name].__type === COMPUTED) {
+          if (t && target[name].dispose) {
             target[name].dispose();
           }
           target[name] = value;
@@ -175,22 +195,15 @@ const storeHandlerFactory = function(path, listeners) {
       });
     }
   };
-};
-
-/**
- * Store - creates a proxy wrapper that allows observables to be used as if they
- * were plain javascript objects.
- * 
- * @export
- * @param {any} [state={}] - Object that defines your state, should be made of 
- *   unobserved values, observables, and computed values.
- * @param {any} [actions={}] - Object that defines actions that operate on 
- *   your state.
- * @returns {store} Proxy to use observables/computed transparently as if POJO.
- */
-export function Store(state = {}, actions = {}, path = []) {
-  const local = {};
-  const proxy = new Proxy(local, storeHandlerFactory(path));
+  proxy = new Proxy(state, storeHandler);
+  Object.keys(state).forEach(key => {
+    const s = state[key];
+    const t = s.__type;
+    if (t === COMPUTED || t === ACTION) {
+      s.context(proxy);
+    }
+  });
+  /* simplify and remove this logic...
   Object.keys(state).forEach(key => {
     if (typeof state[key] === "function" && state[key].__type !== OBSERVABLE) {
       proxy[key] = computed(state[key], proxy);
@@ -208,17 +221,24 @@ export function Store(state = {}, actions = {}, path = []) {
     }
     proxy[key] = action(actions[key], proxy);
   });
+  */
+  /*
   proxy.snapshot = computed(() => {
     const result = {};
-    for (const key in proxy) {
-      const p = proxy[key];
-      const t = p.__type;
-      if (t === OBSERVABLE) {
-        result[key] = p;
-      } else if (t === STORE) {
-        result[key] = p.snapshot();
+    const keys = Object.keys(local);
+    keys.forEach(key => {
+      console.log(key);
+      const l = local[key];
+      if (l.__type != null) {
+        const t = l.__type;
+        if (t === OBSERVABLE) {
+          console.log(l());
+          //result[key] = l();
+        } else if (t === STORE) {
+          result[key] = proxy[key].snapshot();
+        }
       }
-    }
+    });
     return result;
   });
   proxy.restore = action(snap => {
@@ -233,6 +253,7 @@ export function Store(state = {}, actions = {}, path = []) {
       }
     });
   });
+  */
   proxy.__type = STORE;
   return proxy;
 }

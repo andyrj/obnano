@@ -27,23 +27,15 @@ function hydrate(element) {
 export function app(store, view, target) {
   const invoke = [];
   const patch = patchFactory(invoke);
-  let isRendering = false;
   let oldNodes;
   target = target || document.body;
-  function render() {
+  oldNodes = hydrate(target.children[0]);
+  autorun(() => {
     const newNodes = view(store);
     patch(target, target.childNodes[0], oldNodes, newNodes);
     oldNodes = newNodes;
-    isRendering = false;
     while (invoke.length > 0) {
       invoke.shift()();
-    }
-  }
-  oldNodes = hydrate(target.children[0]);
-  autorun(() => {
-    if (!isRendering) {
-      isRendering = true;
-      requestAnimationFrame(render);
     }
   });
   return store;
