@@ -381,6 +381,19 @@ test("store should throw if given state and action with overlapping key", t => {
   });
 });
 
+// testing a bug condition
+test("autorun should be triggered by simple observable update", t => {
+  const test = observable("test");
+  let count = 0;
+  autorun(() => {
+    count++;
+    let temp = test();
+  });
+  t.is(count, 1);
+  test("2");
+  t.is(count, 2);
+});
+
 /* need to fix this test...
 test("circular dependencies should short circuit after MAX_DEPTH iterations", t => {
   console.warn = () => {};

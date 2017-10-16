@@ -1,4 +1,4 @@
-//import * as jsonPatch from "./patch";
+import { apply, Add, Remove } from "./json";
 
 const stack = [];
 let actions = 0;
@@ -43,6 +43,7 @@ function notifyObservers(obs) {
     }
   });
 }
+
 // TODO: need to pass path of the array...
 function extendArray(val, observers) {
   const arrHandler = {
@@ -82,71 +83,98 @@ function extendArray(val, observers) {
   return new Proxy(val, arrHandler);
 }
 
-// TODO: on set & delete path needs to be used to create patch...
-const storeHandler = {
-  get(target, name) {
-    if (name in target) {
-      if (
-        target[name].__type === OBSERVABLE ||
-        target[name].__type === COMPUTED
-      ) {
-        return target[name]();
-      }
-      return target[name];
-    } else {
-      return;
+function emitPatches(listeners = []) {
+  if (actions === 0) {
+    listeners.forEach(l => {
+      l(patchQueue);
+    });
+    while (patchQueue.length > 0) {
+      patchQueue.pop();
     }
-  },
-  set(target, name, value) {
-    if (name in target) {
-      if (target[name].__type === OBSERVABLE) {
-        if (value.__type === OBSERVABLE) {
-          target[name](value());
+  }
+}
+
+const storeHandlerFactory = function(path, listeners) {
+  return {
+    get(target, name) {
+      if (name in target) {
+        if (
+          target[name].__type === OBSERVABLE ||
+          target[name].__type === COMPUTED
+        ) {
+          return target[name]();
+        }
+        return target[name];
+      } else {
+        return;
+      }
+    },
+    set(target, name, value) {
+      if (name in target) {
+        if (target[name].__type === OBSERVABLE) {
+          if (value.__type === OBSERVABLE) {
+            target[name](value());
+          } else {
+            target[name](value);
+          }
         } else {
-          target[name](value);
+          if (target[name].__type === COMPUTED) {
+            target[name].dispose();
+          }
+          target[name] = value;
         }
       } else {
-        if (target[name].__type === COMPUTED) {
-          target[name].dispose();
-        }
         target[name] = value;
       }
-    } else {
-      target[name] = value;
-    }
-    return true;
-  },
-  deleteProperty(target, name) {
-    if (name in target) {
-      if (target[name].dispose != null) {
-        target[name].dispose();
+
+      // create json patchs for observable and unobserved values...
+      if (
+        (!value.__type && typeof value !== "function") ||
+        value.__type === OBSERVABLE
+      ) {
+        patchQueue.push(Add(path.concat(name), value));
+        emitPatches(listeners);
       }
-      delete target[name];
+
       return true;
-    } else {
-      return false;
-    }
-  },
-  has(target, name) {
-    if (name in target) {
-      const type = target[name].__type;
-      if (type < ACTION) {
+    },
+    deleteProperty(target, name) {
+      if (name in target) {
+        const t = target[name];
+        if ((!t.__type && typeof t !== "function") || t.__type === OBSERVABLE) {
+          patchQueue.push(Remove(path.concat(name)));
+        }
+        if (target[name].dispose != null) {
+          target[name].dispose();
+        }
+        delete target[name];
+        emitPatches(listeners);
         return true;
-      } else if (type >= ACTION) {
-        return false;
       } else {
-        return true;
+        return false;
       }
-    } else {
-      return false;
+    },
+    has(target, name) {
+      if (name in target) {
+        const type = target[name].__type;
+        if (type < ACTION) {
+          return true;
+        } else if (type >= ACTION) {
+          return false;
+        } else {
+          return true;
+        }
+      } else {
+        return false;
+      }
+    },
+    ownKeys(target) {
+      return Reflect.ownKeys(target).filter(k => {
+        const type = target[k].__type;
+        return !type || type >= ACTION;
+      });
     }
-  },
-  ownKeys(target) {
-    return Reflect.ownKeys(target).filter(k => {
-      const type = target[k].__type;
-      return !type || type >= ACTION;
-    });
-  }
+  };
 };
 
 /**
@@ -160,16 +188,17 @@ const storeHandler = {
  *   your state.
  * @returns {store} Proxy to use observables/computed transparently as if POJO.
  */
-export function Store(state = {}, actions = {}) {
+export function Store(state = {}, actions = {}, path = []) {
   const local = {};
-  const proxy = new Proxy(local, storeHandler);
+  const proxy = new Proxy(local, storeHandlerFactory(path));
   Object.keys(state).forEach(key => {
     if (typeof state[key] === "function" && state[key].__type !== OBSERVABLE) {
       proxy[key] = computed(state[key], proxy);
     } else if (typeof state[key] === "object" && state[key] !== null) {
-      proxy[key] = Store(state[key], actions[key]);
+      proxy[key] = Store(state[key], actions[key], path.concat(key));
       delete actions[key];
     } else {
+      // wrap array here before storing
       proxy[key] = state[key];
     }
   });
@@ -249,6 +278,9 @@ export function action(fn, context) {
     actions--;
   };
   func.__type = ACTION;
+  func.context = function(newContext) {
+    context = newContext;
+  };
   return func;
 }
 
@@ -264,6 +296,9 @@ export function action(fn, context) {
 export function observable(value) {
   const observers = [];
   let disposed = false;
+  if (Array.isArray(value)) {
+    value = extendArray(value, observers);
+  }
   const data = function(arg) {
     if (disposed) {
       return;
@@ -272,17 +307,21 @@ export function observable(value) {
       if (stack.length > 0) {
         stack[stack.length - 1].addDependency(data);
       }
-      if (Array.isArray(value)) {
-        return extendArray(value, observers);
-      } else {
-        return value;
-      }
+      return value;
     } else {
       if (actions === 0) {
-        value = arg;
+        if (Array.isArray(arg)) {
+          value = extendArray(arg, observers);
+        } else {
+          value = arg;
+        }
       } else {
         transaction.o.push(() => {
-          value = arg;
+          if (Array.isArray(arg)) {
+            value = extendArray(arg, observers);
+          } else {
+            value = arg;
+          }
         });
       }
       notifyObservers(observers);
@@ -361,6 +400,9 @@ export function computed(thunk, context) {
     current.dispose();
     dispose();
     disposed = true;
+  };
+  wrapper.context = function(newContext) {
+    context = newContext;
   };
   Object.freeze(wrapper);
   return wrapper;

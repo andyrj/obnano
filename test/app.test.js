@@ -89,9 +89,11 @@ test("app should trigger vnode life cycle events", t => {
   t.is(removeCount, 1);
 });
 
-/* need to figure out how to properly test rAF
-test.cb("app rendering should be debounced by requestAnimationFrame", t => {
-  global.requestAnimationFrame = cb => setTimeout(cb, 100);
+test("app rendering should be debounced by requestAnimationFrame", t => {
+  let rAFcb;
+  global.requestAnimationFrame = function(cb) {
+    rAFcb = cb;
+  }; 
   let counter = 0;
   const appStore = app(
     Store(
@@ -104,26 +106,22 @@ test.cb("app rendering should be debounced by requestAnimationFrame", t => {
         }
       }
     ),
-    view(store) {
+    store => {
       counter++;
       return h("div", {}, [store.count]);
     }
   );
-  setTimeout(() => {
-    t.is(counter, 1);
-    appStore.increment();
-    appStore.increment();
-    appStore.increment();
-    appStore.increment();
-    appStore.increment();
-    appStore.increment();
-    appStore.increment();
-    appStore.increment();
-    setTimeout(() => {
-      t.is(counter, 2);
-      t.is(appStore.count, 8);
-      t.end();
-    }, 200);
-  }, 200);
+  rAFcb();
+  rAFcb = null;
+  t.is(counter, 1);
+  appStore.increment();
+  t.is(appStore.count, 1);
+  appStore.increment();
+  t.is(appStore.count, 2);
+  appStore.increment();
+  t.is(appStore.count, 3);
+  rAFcb();
+  rAFcb = null;
+  t.is(counter, 2);
+  t.is(appStore.count, 3);
 });
-*/
