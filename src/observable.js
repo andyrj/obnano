@@ -94,6 +94,15 @@ function emitPatches(listeners = []) {
   }
 }
 
+const nonIterableKeys = [
+  "snapshot",
+  "restore",
+  "register",
+  "unregister",
+  "apply",
+  "__type"
+];
+
 /**
  * Store - creates a proxy wrapper that allows observables to be used as if they
  * were plain javascript objects.
@@ -188,7 +197,10 @@ export function Store(state = {}, path = []) {
     ownKeys(target) {
       return Reflect.ownKeys(target).filter(k => {
         const type = target[k].__type;
-        return !type || type >= ACTION;
+        return (
+          ((!type && typeof target[k] !== "function") || type < ACTION) &&
+          nonIterableKeys.indexOf(k) === -1
+        );
       });
     }
   };

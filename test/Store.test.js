@@ -113,7 +113,7 @@ test("Store should only iterate observable, computed, and pojo non-function keys
     }
   );
   let valid = true;
-  for (var prop in store) {
+  for (let prop in store) {
     if (prop === "d" || prop === "e") {
       valid = false;
     }
