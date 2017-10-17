@@ -208,10 +208,11 @@ export function Store(state = {}, actions = {}, path = []) {
   proxy = new Proxy(local, storeHandler);
   Object.keys(state).forEach(key => {
     const s = state[key];
-    if (typeof s === "function") {
-      local[key] = computed(s, proxy);
-    } else {
+    const t = s.__type;
+    if (t === OBSERVABLE || typeof s !== "function") {
       local[key] = s;
+    } else {
+      local[key] = computed(s, proxy);
     }
   });
   Object.keys(actions).forEach(key => {
@@ -223,9 +224,6 @@ export function Store(state = {}, actions = {}, path = []) {
     if (t === ACTION) {
       a.context(proxy);
       local[key] = a;
-      if (key === "increment") {
-        console.log(local[key]);
-      }
     } else {
       local[key] = a;
     }
@@ -436,10 +434,7 @@ export function computed(thunk, context) {
         return;
       }
       if (delayedReaction != null) {
-        // console.log("delayedReaction called");
-        // console.log("value before reaction: " + current());
         delayedReaction();
-        // console.log("value after reaction: " + current());
         delayedReaction = null;
       }
       return current();

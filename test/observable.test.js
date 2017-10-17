@@ -13,7 +13,6 @@ test("observables should set a new value when called with an argument", t => {
 });
 
 test("observables referenced multiple times in a single computed should not duplicate the observations", t => {
-  console.log("+++++");
   const test = observable("test");
   const comp = computed(() => {
     return `${test()}: ${test()}`;
@@ -21,7 +20,6 @@ test("observables referenced multiple times in a single computed should not dupl
   t.is(comp(), "test: test");
   test("dupe");
   t.is(comp(), "dupe: dupe");
-  console.log("+++++");
 });
 
 test("observables should not allow duplicate observer subscription", t => {
