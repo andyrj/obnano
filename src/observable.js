@@ -182,7 +182,7 @@ export function Store(state = {}, actions = {}, path = []) {
       }
     },
     has(target, name) {
-      if (name in target) {
+      if (name in target && nonIterableKeys.indexOf(name) === -1) {
         const isFunc = typeof target[name] === "function";
         const type = target[name].__type;
         if (isFunc) {
@@ -201,10 +201,7 @@ export function Store(state = {}, actions = {}, path = []) {
     ownKeys(target) {
       return Reflect.ownKeys(target).filter(k => {
         const type = target[k].__type;
-        return (
-          ((!type && typeof target[k] !== "function") || type < ACTION) &&
-          nonIterableKeys.indexOf(k) === -1
-        );
+        return (!type && typeof target[k] !== "function") || type < ACTION;
       });
     }
   };
@@ -240,16 +237,19 @@ export function Store(state = {}, actions = {}, path = []) {
       if (l.__type) {
         const t = l.__type;
         if (t === OBSERVABLE) {
+          console.log(l.__type);
           val = l();
         } else if (t === STORE) {
+          console.log(l.__type);
           val = l.snapshot();
         }
-      } else {
-        if (typeof l !== "function") {
-          val = l;
-        }
+      } else if (typeof l !== "function") {
+        val = l;
       }
-      result[key] = val;
+      if (val !== undefined) {
+        console.log(key);
+        result[key] = val;
+      }
     });
     return result;
   });

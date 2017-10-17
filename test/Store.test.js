@@ -158,4 +158,27 @@ test("Store should only return true for in operator on pojo/observable/computed/
   t.is("d" in store, false);
   t.is("e" in store, false);
   t.is("f" in store, false);
+  t.is("__type" in store, false);
+  t.is("snapshot" in store, false);
+  t.is(store.__type, 2);
+  t.is(typeof store.snapshot, "object");
+});
+
+test("Store snapshots", t => {
+  console.log("+++++");
+  const store = Store(
+    {
+      a: "a",
+      b: observable("b"),
+      c: function() {
+        return `${this.a} + ${this.b}`;
+      }
+    },
+    {
+      d: action(() => {}),
+      e: () => {}
+    }
+  );
+  t.deepEqual(store.snapshot, { a: "a", b: "b", c: "a + b"});
+  console.log("+++++");
 });
