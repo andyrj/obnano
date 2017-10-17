@@ -157,4 +157,5 @@ test("Store should only return true for in operator on pojo/observable/computed/
   t.is("c" in store, true);
   t.is("d" in store, false);
   t.is("e" in store, false);
+  t.is("f" in store, false);
 });
