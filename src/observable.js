@@ -5,9 +5,9 @@ let actions = 0;
 const MAX_DEPTH = 100;
 const OBSERVABLE = 0;
 const COMPUTED = 1;
+const STORE = 2;
 const AUTORUN = 4;
 const ACTION = 3;
-const STORE = 2;
 let depth = MAX_DEPTH;
 const transaction = { o: [], c: [], a: [] };
 const patchQueue = [];
@@ -23,10 +23,7 @@ const arrayMutators = [
 ];
 
 function notifyObservers(obs) {
-  //console.log("observers:");
-  //console.log(obs);
   obs.forEach(o => {
-    //console.log(o.run.toString());
     if (actions === 0) {
       o.run();
     } else {
@@ -203,41 +200,25 @@ export function Store(state = {}, path = []) {
       s.context(proxy);
     }
   });
-  /* simplify and remove this logic...
-  Object.keys(state).forEach(key => {
-    if (typeof state[key] === "function" && state[key].__type !== OBSERVABLE) {
-      proxy[key] = computed(state[key], proxy);
-    } else if (typeof state[key] === "object" && state[key] !== null) {
-      proxy[key] = Store(state[key], actions[key], path.concat(key));
-      delete actions[key];
-    } else {
-      // wrap array here before storing
-      proxy[key] = state[key];
-    }
-  });
-  Object.keys(actions).forEach(key => {
-    if (proxy[key] != null) {
-      throw new RangeError("action key overlaps with existing state key");
-    }
-    proxy[key] = action(actions[key], proxy);
-  });
-  */
-  /*
   proxy.snapshot = computed(() => {
     const result = {};
-    const keys = Object.keys(local);
+    const keys = Object.keys(state);
     keys.forEach(key => {
-      console.log(key);
-      const l = local[key];
-      if (l.__type != null) {
-        const t = l.__type;
+      const s = state[key];
+      let val;
+      if (s.__type) {
+        const t = s.__type;
         if (t === OBSERVABLE) {
-          console.log(l());
-          //result[key] = l();
+          val = s();
         } else if (t === STORE) {
-          result[key] = proxy[key].snapshot();
+          val = s.snapshot();
+        }
+      } else {
+        if (typeof s !== "function") {
+          val = s;
         }
       }
+      result[key] = val;
     });
     return result;
   });
@@ -253,7 +234,20 @@ export function Store(state = {}, path = []) {
       }
     });
   });
-  */
+  proxy.register = function(handler) {
+    if (listeners.indexOf(handler) === -1) {
+      listeners.push(handler);
+    }
+  };
+  proxy.unregister = function(handler) {
+    const index = listeners.indexOf(handler);
+    if (index > -1) {
+      listeners.splice(index, 1);
+    }
+  };
+  proxy.apply = function(patches) {
+    apply(proxy, patches);
+  };
   proxy.__type = STORE;
   return proxy;
 }
@@ -392,10 +386,12 @@ export function computed(thunk, context) {
     current(result);
   }
   const computation = function() {
-    if (current.hasObservers() || init) {
-      init = false;
+    if (current.hasObservers() || !init) {
       reaction();
     } else {
+      if (init) {
+        init = false;
+      }
       delayedReaction = function() {
         reaction();
       };
