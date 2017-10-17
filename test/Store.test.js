@@ -137,3 +137,24 @@ test("Store should automatically provide this context to computed values", t => 
   );
   t.is(store.c, "a + b");
 });
+
+test("Store should only return true for in operator on pojo/observable/computed/store values", t => {
+  const store = Store(
+    {
+      a: "a",
+      b: observable("b"),
+      c: function() {
+        return `${this.a} + ${this.b}`;
+      }
+    },
+    {
+      d: action(() => {}),
+      e: () => {}
+    }
+  );
+  t.is("a" in store, true);
+  t.is("b" in store, true);
+  t.is("c" in store, true);
+  t.is("d" in store, false);
+  t.is("e" in store, false);
+});

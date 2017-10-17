@@ -183,11 +183,14 @@ export function Store(state = {}, actions = {}, path = []) {
     },
     has(target, name) {
       if (name in target) {
+        const isFunc = typeof target[name] === "function";
         const type = target[name].__type;
-        if (type < ACTION) {
-          return true;
-        } else if (type >= ACTION) {
-          return false;
+        if (isFunc) {
+          if (type < ACTION) {
+            return true;
+          } else {
+            return false;
+          }
         } else {
           return true;
         }
