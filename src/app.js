@@ -1,5 +1,5 @@
 import patchFactory from "./patch";
-import { autorun } from "./observable";
+import { autorun } from "post-js";
 
 function hydrate(element) {
   return element
