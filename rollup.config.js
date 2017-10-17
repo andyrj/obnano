@@ -15,6 +15,8 @@ export default {
       plugins: []
     })
   ],
-  globals: {},
-  external: []
+  globals: {
+    "post-js": "postJS"
+  },
+  external: ["post-js"]
 };

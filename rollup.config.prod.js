@@ -17,6 +17,8 @@ export default {
     }),
     minify({ comments: false })
   ],
-  globals: {},
-  external: []
+  globals: {
+    "post-js": "postJs"
+  },
+  external: ["post-js"]
 };
