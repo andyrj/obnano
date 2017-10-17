@@ -12,7 +12,9 @@ test("app should return valid store object created from state, actions for inter
   const appStore = app(
     Store(
       {
-        test: "test",
+        test: "test"
+      },
+      {
         change(val) {
           this.test = val;
         }
@@ -48,7 +50,9 @@ test("app should trigger vnode life cycle events", t => {
       {
         create: observable(false),
         update: observable(false),
-        remove: observable(false),
+        remove: observable(false)
+      },
+      {
         doCreate() {
           this.create = true;
         },

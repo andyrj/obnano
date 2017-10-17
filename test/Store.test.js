@@ -90,7 +90,9 @@ test("Store should allow updating observable and unobservable values transparent
 test("Store actions should be able to mutate state", t => {
   const store = Store(
     {
-      count: 0,
+      count: 0
+    },
+    {
       increment: action(function() {
         this.count++;
       })
@@ -105,9 +107,11 @@ test("Store should only iterate observable, computed, and pojo non-function keys
     {
       a: "a",
       b: observable("b"),
-      c: computed(function() {
+      c: function() {
         return `${this.a} + ${this.b}`;
-      }),
+      }
+    },
+    {
       d: action(function() {}),
       e: () => {}
     }
@@ -126,9 +130,9 @@ test("Store should automatically provide this context to computed values", t => 
     {
       a: "a",
       b: observable("b"),
-      c: computed(function() {
+      c: function() {
         return `${this.a} + ${this.b}`;
-      })
+      }
     }
   );
   t.is(store.c, "a + b");

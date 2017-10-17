@@ -113,7 +113,8 @@ const nonIterableKeys = [
  * @param {any} [path=[]] - Array of paths that lead to this Store...
  * @returns {store} Proxy to use observables/computed transparently as if POJO.
  */
-export function Store(state = {}, path = []) {
+export function Store(state = {}, actions = {}, path = []) {
+  const local = {};
   let proxy;
   const listeners = [];
   const storeHandler = {
@@ -204,30 +205,47 @@ export function Store(state = {}, path = []) {
       });
     }
   };
-  proxy = new Proxy(state, storeHandler);
+  proxy = new Proxy(local, storeHandler);
   Object.keys(state).forEach(key => {
     const s = state[key];
-    const t = s.__type;
-    if (t === COMPUTED || t === ACTION) {
-      s.context(proxy);
+    if (typeof s === "function") {
+      local[key] = computed(s, proxy);
+    } else {
+      local[key] = s;
+    }
+  });
+  Object.keys(actions).forEach(key => {
+    const a = actions[key];
+    const t = a.__type;
+    if (key in local) {
+      throw new RangeError("Key overlap between state and actions");
+    }
+    if (t === ACTION) {
+      a.context(proxy);
+      local[key] = a;
+      if (key === "increment") {
+        console.log(local[key]);
+      }
+    } else {
+      local[key] = a;
     }
   });
   proxy.snapshot = computed(() => {
     const result = {};
-    const keys = Object.keys(state);
+    const keys = Object.keys(local);
     keys.forEach(key => {
-      const s = state[key];
+      const l = local[key];
       let val;
-      if (s.__type) {
-        const t = s.__type;
+      if (l.__type) {
+        const t = l.__type;
         if (t === OBSERVABLE) {
-          val = s();
+          val = l();
         } else if (t === STORE) {
-          val = s.snapshot();
+          val = l.snapshot();
         }
       } else {
-        if (typeof s !== "function") {
-          val = s;
+        if (typeof l !== "function") {
+          val = l;
         }
       }
       result[key] = val;
@@ -390,20 +408,20 @@ export function observable(value) {
  */
 export function computed(thunk, context) {
   const current = observable(undefined);
-  let init = true;
   let disposed = false;
+  let init = true;
   let delayedReaction = null;
   function reaction() {
     const result = thunk.call(context);
     current(result);
   }
   const computation = function() {
-    if (current.hasObservers() || !init) {
-      reaction();
-    } else {
+    if (current.hasObservers() || init) {
       if (init) {
         init = false;
       }
+      reaction();
+    } else {
       delayedReaction = function() {
         reaction();
       };
@@ -418,7 +436,10 @@ export function computed(thunk, context) {
         return;
       }
       if (delayedReaction != null) {
+        // console.log("delayedReaction called");
+        // console.log("value before reaction: " + current());
         delayedReaction();
+        // console.log("value after reaction: " + current());
         delayedReaction = null;
       }
       return current();
