@@ -23,7 +23,8 @@
     "addEventListener": true,
     "Element": true,
     "HTMLElement": true,
-    "requestAnimationFrame": true
+    "requestAnimationFrame": true,
+    "TextEncoder": true
   },
   "rules": {
     "prettier/prettier": "error",
