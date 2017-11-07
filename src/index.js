@@ -18,6 +18,18 @@ function walkFragment(parent, element, exprs, parts) {
         }
       });
     }
+    // remove textNode from parent and replace with nodes
+    if (parent.children.length === 1) {
+      nodes.forEach(node => {
+        parent.appendChild(node);
+      });
+    } else {
+      const next = element.nextSibling;
+      nodes.forEach(node => {
+        parent.insertBefore(node, next);
+      });
+    }
+    parent.removeElement(element);
   } else {
     // check attributes for value === "{{}}" and associate with exprs.shift()
     [].forEach.call(element.attributes, attr => {
