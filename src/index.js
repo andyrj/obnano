@@ -9,11 +9,13 @@ function walkFragment(parent, element, exprs, parts) {
     const split = text.split("{{}}");
     const nodes = [];
     if (split.length > 0) {
-      split.forEach(node => {
+      split.forEach((node, i) => {
         nodes.push(document.createTextNode(node));
-        const partNode = document.createTextNode("");
-        nodes.push(partNode);
-        parts.push([() => partNode, exprs.shift()]);
+        if (i < split.length - 1) { // was consuming 1 to many exprs for split...
+          const partNode = document.createTextNode("");
+          nodes.push(partNode);
+          parts.push([() => partNode, exprs.shift()]);
+        }
       });
     }
   } else {
