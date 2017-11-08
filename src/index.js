@@ -7,11 +7,13 @@ function walkFragment(parent, element, exprs, parts) {
     // split text node at "{{}}" and associate with exprs.shift()...
     const text = element.nodeValue;
     const split = text.split("{{}}");
+    const end = split.length - 1;
     const nodes = [];
     if (split.length > 0) {
       split.forEach((node, i) => {
         nodes.push(document.createTextNode(node));
-        if (i < split.length - 1) { // was consuming 1 to many exprs for split...
+        if (i < end) {
+          // TODO: if exprs is a fragment for another template should this be different?
           const partNode = document.createTextNode("");
           nodes.push(partNode);
           parts.push([() => partNode, exprs.shift()]);
