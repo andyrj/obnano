@@ -18,13 +18,16 @@ function walkFragment(parent, element, exprs, parts) {
           // TODO: if exprs is a fragment for another template should this be different?
           const partNode = document.createTextNode("");
           nodes.push(partNode);
-          parts.push([() => partNode, exprs.shift()]);
+          parts.push({
+            target: partNode,
+            expression: exprs.shift()
+          });
         }
       });
     }
     // remove textNode from parent and replace with nodes
     if (parent.childNodes.length === 1) {
-      parent.removeChild(parent.firstChild);
+      parent.removeChild(element);
       nodes.forEach(node => {
         parent.appendChild(node);
       });
@@ -39,7 +42,10 @@ function walkFragment(parent, element, exprs, parts) {
     // check attributes for value === "{{}}" and associate with exprs.shift()
     [].forEach.call(element.attributes, attr => {
       if (attr.nodeValue === "{{}}") {
-        parts.push([() => [element, attr.nodeName], exprs.shift()]);
+        parts.push({
+          target: [element, attr.nodeName],
+          expression: exprs.shift()
+        });
         element.removeAttribute(attr.nodeName);
       }
     });
@@ -60,7 +66,6 @@ function TemplateResult(template, exprs) {
     [].forEach.call(fragment.content.children, child => {
       walkFragment(fragment.content, child, exprs, parts);
     });
-    //console.log(fragment.content.children[0].outerHTML, exprs);
     if (exprs.length > 0) {
       throw new RangeError(
         "Error processing template, unbalanced result from walkFragment"
@@ -70,13 +75,26 @@ function TemplateResult(template, exprs) {
   parts.forEach(part =>
     disposers.push(
       autorun(() => {
-        const target = part[0]();
-        const expr = part[1];
+        const target = part.target;
+        const expr = part.expression;
         const value = typeof expr === "function" ? expr() : expr;
         if (Array.isArray(target)) {
           target[0][target[1]] = value;
         } else {
-          target.nodeValue = value; // dynamic textNode
+          const parent = target.parentNode;
+          if (typeof value === "string") {
+            target.nodeValue = value; // dynamic textNode
+          } else {
+            // I need to also store parent in part for replaceChild...
+            if (value.nodeType === 1) {
+              if (value.nodeName === "TEMPLATE") {
+                const nestedFragment = document.importNode(value.content, true);
+                parent.replaceChild(nestedFragment, target);
+              } else {
+                parent.replaceChild(value, target);
+              }
+            }
+          }
         }
       })
     )
