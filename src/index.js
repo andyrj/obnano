@@ -11,7 +11,9 @@ function walkFragment(parent, element, exprs, parts) {
     const nodes = [];
     if (split.length > 0) {
       split.forEach((node, i) => {
-        nodes.push(document.createTextNode(node));
+        if (node !== "") {
+          nodes.push(document.createTextNode(node));
+        }
         if (i < end) {
           // TODO: if exprs is a fragment for another template should this be different?
           const partNode = document.createTextNode("");
@@ -21,7 +23,8 @@ function walkFragment(parent, element, exprs, parts) {
       });
     }
     // remove textNode from parent and replace with nodes
-    if (parent.children.length === 1) {
+    if (parent.childNodes.length === 1) {
+      parent.removeChild(parent.firstChild);
       nodes.forEach(node => {
         parent.appendChild(node);
       });
@@ -30,8 +33,8 @@ function walkFragment(parent, element, exprs, parts) {
       nodes.forEach(node => {
         parent.insertBefore(node, next);
       });
+      parent.removeChild(element);
     }
-    parent.removeElement(element);
   } else {
     // check attributes for value === "{{}}" and associate with exprs.shift()
     [].forEach.call(element.attributes, attr => {
@@ -40,8 +43,8 @@ function walkFragment(parent, element, exprs, parts) {
         element.removeAttribute(attr.nodeName);
       }
     });
-    if (element.children.length > 0) {
-      element.children.forEach(child => {
+    if (element.childNodes.length > 0) {
+      element.childNodes.forEach(child => {
         walkFragment(element, child, exprs, parts);
       });
     }
@@ -54,29 +57,30 @@ function TemplateResult(template, exprs) {
   const fragment = document.importNode(template, true);
   // walk fragment and look for {{}} attributes and textNodes with {{}}
   while (exprs.length > 0) {
-    fragment.children.forEach(child => {
-      walkFragment(fragment, child, exprs, parts);
+    [].forEach.call(fragment.content.children, child => {
+      walkFragment(fragment.content, child, exprs, parts);
     });
+    //console.log(fragment.content.children[0].outerHTML, exprs);
     if (exprs.length > 0) {
       throw new RangeError(
         "Error processing template, unbalanced result from walkFragment"
       );
     }
   }
-  fragment.update = () =>
-    parts.forEach(part =>
-      disposers.push(
-        autorun(() => {
-          const target = part[0]();
-          const expr = part[1];
-          if (Array.isArray(target)) {
-            target[0][target[1]] = expr(); // dynamic attribute
-          } else {
-            target.nodeValue = expr(); // dynamic textNode
-          }
-        })
-      )
-    );
+  parts.forEach(part =>
+    disposers.push(
+      autorun(() => {
+        const target = part[0]();
+        const expr = part[1];
+        const value = typeof expr === "function" ? expr() : expr;
+        if (Array.isArray(target)) {
+          target[0][target[1]] = value;
+        } else {
+          target.nodeValue = value; // dynamic textNode
+        }
+      })
+    )
+  );
   fragment.dispose = () => disposers.forEach(disposer => disposer());
   return fragment;
 }
