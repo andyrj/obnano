@@ -64,7 +64,7 @@ function TemplateResult(template, exprs) {
     }
   }
   fragment.update = () =>
-    parts.forEach(part => {
+    parts.forEach(part =>
       disposers.push(
         autorun(() => {
           const target = part[0]();
@@ -75,18 +75,19 @@ function TemplateResult(template, exprs) {
             target.nodeValue = expr(); // dynamic textNode
           }
         })
-      );
-    });
+      )
+    );
   fragment.dispose = () => disposers.forEach(disposer => disposer());
   return fragment;
 }
 
 export function html(strs, ...exprs) {
-  const html = strs.reduce((acc, val, i) => {
-    return acc + val + exprs[i] !== undefined ? "{{}}" : "";
-  }, "");
+  const html = strs.reduce(
+    (acc, val, i) => (acc + val + exprs[i] ? "{{}}" : ""),
+    ""
+  );
   let template = templateCache.get(strs);
-  if (template === undefined) {
+  if (!template) {
     template = document.createElement("template");
     template.innerHTML = html;
     templateCache.set(strs, template);
