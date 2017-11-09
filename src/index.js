@@ -66,11 +66,6 @@ function TemplateResult(template, exprs) {
     [].forEach.call(fragment.content.children, child => {
       walkFragment(fragment.content, child, exprs, parts);
     });
-    if (exprs.length > 0) {
-      throw new RangeError(
-        "Error processing template, unbalanced result from walkFragment"
-      );
-    }
   }
   parts.forEach(part =>
     disposers.push(
