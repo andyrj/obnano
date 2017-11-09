@@ -82,10 +82,7 @@ function TemplateResult(template, exprs) {
 }
 
 export function html(strs, ...exprs) {
-  const html = strs.reduce(
-    (acc, val, i) => (acc + val + exprs[i] ? "{{}}" : ""),
-    ""
-  );
+  const html = strs.join("{{}}");
   let template = templateCache.get(strs);
   if (!template) {
     template = document.createElement("template");
