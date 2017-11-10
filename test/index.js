@@ -48,8 +48,15 @@ test("tagged template literal should handle dynamic nodes dispersed in static no
   t.is(frag2.content.firstChild.innerHTML, "in the middle it's dynamic!");
 })
 
-/*
-test("", t => {
-
+test("tagged template literal should handle dynamic attributes", t => {
+  const str = "test";
+  const frag = html`<div id=${str}>test</div>`;
+  t.is(frag.content.firstChild.id, str);
 });
-*/
+
+test("tagged template literal should handle dynamic child interspersed with static nodes", t => {
+  const node = document.createElement("div");
+  node.innerHTML = "test";
+  const frag = html`<div><br>before${node}<br>after</div>`;
+  t.is(frag.content.firstChild.outerHTML, "<div><br>before<div>test</div><br>after</div>");
+});

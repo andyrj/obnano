@@ -4,7 +4,6 @@ const templateCache = new Map();
 
 function walkFragment(parent, element, exprs, parts) {
   if (element.nodeType === 3) {
-    // split text node at "{{}}" and associate with exprs.shift()...
     const text = element.nodeValue;
     const split = text.split("{{}}");
     const end = split.length - 1;
@@ -15,7 +14,6 @@ function walkFragment(parent, element, exprs, parts) {
           nodes.push(document.createTextNode(node));
         }
         if (i < end) {
-          // TODO: if exprs is a fragment for another template should this be different?
           const partNode = document.createTextNode("");
           nodes.push(partNode);
           parts.push({
@@ -24,22 +22,12 @@ function walkFragment(parent, element, exprs, parts) {
           });
         }
       });
-    }
-    // remove textNode from parent and replace with nodes
-    if (parent.childNodes.length === 1) {
-      parent.removeChild(element);
       nodes.forEach(node => {
-        parent.appendChild(node);
-      });
-    } else {
-      const next = element.nextSibling;
-      nodes.forEach(node => {
-        parent.insertBefore(node, next);
+        parent.insertBefore(node, element);
       });
       parent.removeChild(element);
     }
   } else {
-    // check attributes for value === "{{}}" and associate with exprs.shift()
     [].forEach.call(element.attributes, attr => {
       if (attr.nodeValue === "{{}}") {
         parts.push({
@@ -50,7 +38,8 @@ function walkFragment(parent, element, exprs, parts) {
       }
     });
     if (element.childNodes.length > 0) {
-      element.childNodes.forEach(child => {
+      const cloneNodes = [].slice.call(element.childNodes, 0);
+      cloneNodes.forEach(child => {
         walkFragment(element, child, exprs, parts);
       });
     }
@@ -61,7 +50,6 @@ function TemplateResult(template, exprs) {
   const parts = [];
   const disposers = [];
   const fragment = document.importNode(template, true);
-  // walk fragment and look for {{}} attributes and textNodes with {{}}
   while (exprs.length > 0) {
     [].forEach.call(fragment.content.children, child => {
       walkFragment(fragment.content, child, exprs, parts);
@@ -78,9 +66,8 @@ function TemplateResult(template, exprs) {
         } else {
           const parent = target.parentNode;
           if (typeof value === "string") {
-            target.nodeValue = value; // dynamic textNode
+            target.nodeValue = value;
           } else {
-            // I need to also store parent in part for replaceChild...
             if (value.nodeType === 1) {
               if (value.nodeName === "TEMPLATE") {
                 const nestedFragment = document.importNode(value.content, true);
