@@ -62,7 +62,9 @@ function TemplateResult(template, exprs) {
         const expr = part.expression;
         const value = typeof expr === "function" ? expr() : expr;
         if (Array.isArray(target)) {
-          target[0][target[1]] = value;
+          const element = target[0];
+          const attribute = target[1];
+          element[attribute] = value;
         } else {
           const parent = target.parentNode;
           if (typeof value === "string") {
@@ -85,6 +87,8 @@ function TemplateResult(template, exprs) {
   return fragment;
 }
 
+// fails when < and > appear in textNode around {{}} placement...
+//const matchTextNodePlaceHolders = /{{}}(?!([^<]+)?>)/; 
 export function html(strs, ...exprs) {
   const html = strs.join("{{}}");
   let template = templateCache.get(strs);
