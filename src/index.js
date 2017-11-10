@@ -76,10 +76,21 @@ function TemplateResult(template, exprs) {
         autorun(() => {
           const target = part.target;
           const expr = part.expression;
-          const value = typeof expr === "function" ? expr() : expr;
           if (Array.isArray(target)) {
-            target[0][target[1]] = value;
+            const element = target[0];
+            const name = target[1];
+            try {
+              element[name] = expr == null ? "" : expr;
+            } catch (_) {} // eslint-disable-line
+            if (typeof expr !== "function") {
+              if (expr == null || expr === false) {
+                element.removeAttribute(name);
+              } else {
+                element.setAttribute(name, expr);
+              }
+            }
           } else {
+            const value = typeof expr === "function" ? expr() : expr;
             const parent = target.parentNode;
             if (target.nodeType === COMMENT_NODE && typeof value === "string") {
               const newNode = document.createTextNode(value);
