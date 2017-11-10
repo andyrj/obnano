@@ -81,26 +81,22 @@ function TemplateResult(template, exprs) {
             target[0][target[1]] = value;
           } else {
             const parent = target.parentNode;
-            if (typeof value === "string") {
-              if (target.nodeType === COMMENT_NODE) {
-                const newNode = document.createTextNode(value);
-                parent.replaceChild(newNode, target);
-                part.target = newNode;
-              } else if (target.nodeType === TEXT_NODE) {
-                target.nodeValue = value;
-              }
-            } else {
-              if (value.nodeType === ELEMENT_NODE) {
-                parent.replaceChild(value, target);
-              } else {
-                if (value.fragment && value.fragment.nodeName === "TEMPLATE") {
-                  const nestedFragment = document.importNode(
-                    value.fragment.content,
-                    true
-                  );
-                  parent.replaceChild(nestedFragment, target);
-                }
-              }
+            if (target.nodeType === COMMENT_NODE && typeof value === "string") {
+              const newNode = document.createTextNode(value);
+              parent.replaceChild(newNode, target);
+              part.target = newNode;
+            } else if (
+              target.nodeType === TEXT_NODE &&
+              typeof value === "string"
+            ) {
+              target.nodeValue = value;
+            } else if (value.nodeType === ELEMENT_NODE) {
+              parent.replaceChild(value, target);
+            } else if (
+              value.fragment &&
+              value.fragment.nodeName === "TEMPLATE"
+            ) {
+              parent.replaceChild(value.fragment.content, target);
             }
           }
         })
