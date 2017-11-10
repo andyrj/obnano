@@ -60,7 +60,7 @@ function generateParts(exprs, parts) {
         });
       }
     }
-  }
+  };
 }
 
 function TemplateResult(template, exprs) {
@@ -98,15 +98,18 @@ function TemplateResult(template, exprs) {
               part.target = newNode;
             } else if (
               target.nodeType === TEXT_NODE &&
-              typeof value === "string"
+              typeof value === "string" &&
+              target.nodeValue !== value
             ) {
               target.nodeValue = value;
-            } else if (value.nodeType === ELEMENT_NODE) {
+            } else if (value.nodeType === ELEMENT_NODE && target !== value) {
               parent.replaceChild(value, target);
+              part.target = value;
             } else if (
               value.fragment &&
               value.fragment.nodeName === "TEMPLATE"
             ) {
+              // TODO: need to maintain a reference to nodes from nested template added to dom...
               parent.replaceChild(value.fragment.content, target);
             }
           }
