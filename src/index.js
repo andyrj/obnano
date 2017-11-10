@@ -1,9 +1,13 @@
 import { autorun } from "post-js";
 
+const ELEMENT_NODE = 1;
+const TEXT_NODE = 3;
+const COMMENT_NODE = 8;
+
 const templateCache = new Map();
 
-function walkFragment(parent, element, exprs, parts) {
-  if (element.nodeType === 3) {
+function placeHolderComments(parent, element) {
+  if (element.nodeType === TEXT_NODE) {
     const text = element.nodeValue;
     const split = text.split("{{}}");
     const end = split.length - 1;
@@ -14,12 +18,7 @@ function walkFragment(parent, element, exprs, parts) {
           nodes.push(document.createTextNode(node));
         }
         if (i < end) {
-          const partNode = document.createTextNode("");
-          nodes.push(partNode);
-          parts.push({
-            target: partNode,
-            expression: exprs.shift()
-          });
+          nodes.push(document.createComment("{{}}"));
         }
       });
       nodes.forEach(node => {
@@ -27,21 +26,39 @@ function walkFragment(parent, element, exprs, parts) {
       });
       parent.removeChild(element);
     }
-  } else {
-    [].forEach.call(element.attributes, attr => {
-      if (attr.nodeValue === "{{}}") {
+  }
+}
+
+function walkDOM(parent, element, fn) {
+  fn(parent, element);
+  if (element.childNodes.length > 0) {
+    const cloneNodes = [].slice.call(element.childNodes, 0);
+    cloneNodes.forEach(child => {
+      walkDOM(element, child, fn);
+    });
+  }
+}
+
+function generateParts(exprs, parts) {
+  return function(parent, element) {
+    if (exprs.length > 0) {
+      const nodeType = element.nodeType;
+      const nodeValue = element.nodeValue;
+      if (nodeType === ELEMENT_NODE) {
+        [].forEach.call(element.attributes, attr => {
+          if (attr.nodeValue === "{{}}") {
+            parts.push({
+              target: [element, attr.nodeName],
+              expression: exprs.shift()
+            });
+          }
+        });
+      } else if (nodeType === COMMENT_NODE && nodeValue === "{{}}") {
         parts.push({
-          target: [element, attr.nodeName],
+          target: element,
           expression: exprs.shift()
         });
-        element.removeAttribute(attr.nodeName);
       }
-    });
-    if (element.childNodes.length > 0) {
-      const cloneNodes = [].slice.call(element.childNodes, 0);
-      cloneNodes.forEach(child => {
-        walkFragment(element, child, exprs, parts);
-      });
     }
   }
 }
@@ -50,51 +67,62 @@ function TemplateResult(template, exprs) {
   const parts = [];
   const disposers = [];
   const fragment = document.importNode(template, true);
-  while (exprs.length > 0) {
-    [].forEach.call(fragment.content.children, child => {
-      walkFragment(fragment.content, child, exprs, parts);
-    });
-  }
-  parts.forEach(part =>
-    disposers.push(
-      autorun(() => {
-        const target = part.target;
-        const expr = part.expression;
-        const value = typeof expr === "function" ? expr() : expr;
-        if (Array.isArray(target)) {
-          const element = target[0];
-          const attribute = target[1];
-          element[attribute] = value;
-        } else {
-          const parent = target.parentNode;
-          if (typeof value === "string") {
-            target.nodeValue = value;
+  [].forEach.call(fragment.content.children, child =>
+    walkDOM(fragment.content, child, generateParts(exprs, parts))
+  );
+  const update = () =>
+    parts.forEach(part =>
+      disposers.push(
+        autorun(() => {
+          const target = part.target;
+          const expr = part.expression;
+          const value = typeof expr === "function" ? expr() : expr;
+          if (Array.isArray(target)) {
+            target[0][target[1]] = value;
           } else {
-            if (value.nodeType === 1) {
-              if (value.nodeName === "TEMPLATE") {
-                const nestedFragment = document.importNode(value.content, true);
-                parent.replaceChild(nestedFragment, target);
-              } else {
+            const parent = target.parentNode;
+            if (typeof value === "string") {
+              if (target.nodeType === COMMENT_NODE) {
+                const newNode = document.createTextNode(value);
+                parent.replaceChild(newNode, target);
+                part.target = newNode;
+              } else if (target.nodeType === TEXT_NODE) {
+                target.nodeValue = value;
+              }
+            } else {
+              if (value.nodeType === ELEMENT_NODE) {
                 parent.replaceChild(value, target);
+              } else {
+                if (value.fragment && value.fragment.nodeName === "TEMPLATE") {
+                  const nestedFragment = document.importNode(
+                    value.fragment.content,
+                    true
+                  );
+                  parent.replaceChild(nestedFragment, target);
+                }
               }
             }
           }
-        }
-      })
-    )
-  );
-  fragment.dispose = () => disposers.forEach(disposer => disposer());
-  return fragment;
+        })
+      )
+    );
+  update(); // trigger initial update before returning from TemplateResult
+  return {
+    fragment,
+    update,
+    dispose: () => disposers.forEach(disposer => disposer())
+  };
 }
 
-// fails when < and > appear in textNode around {{}} placement...
-//const matchTextNodePlaceHolders = /{{}}(?!([^<]+)?>)/; 
 export function html(strs, ...exprs) {
   const html = strs.join("{{}}");
   let template = templateCache.get(strs);
   if (!template) {
     template = document.createElement("template");
     template.innerHTML = html;
+    [].forEach.call(template.content.children, child => {
+      walkDOM(template.content, child, placeHolderComments);
+    });
     templateCache.set(strs, template);
   }
   return TemplateResult(template, exprs);
