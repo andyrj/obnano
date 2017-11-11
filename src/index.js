@@ -205,6 +205,8 @@ export function render(template, target = document.body, hydrate = false) {
   instance = target.__template = template;
   instance.update(template.values);
 
+  // TODO: update logic below so that when render is called from nested template in set() above
+  // if target is a comment node it should replaceChild(instance.fragment.content) instead of append...
   if (target.children.length > 0) {
     if (hydrate) {
       // TODO: add logic to hydrate existing dom...
