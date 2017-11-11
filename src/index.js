@@ -1,5 +1,3 @@
-import { autorun } from "post-js";
-
 const ELEMENT_NODE = 1;
 const TEXT_NODE = 3;
 const COMMENT_NODE = 8;
@@ -63,65 +61,94 @@ function generateParts(exprs, parts) {
   };
 }
 
+function set(part, value) {
+  const target = part.target;
+  if (Array.isArray(target)) {
+    const element = target[0];
+    const name = target[1];
+    try {
+      element[name] = value == null ? "" : value;
+    } catch (_) {} // eslint-disable-line
+    if (typeof expr !== "function") {
+      if (value == null) {
+        element.removeAttribute(name);
+      } else {
+        element.setAttribute(name, value);
+      }
+    }
+  } else {
+    const parent = target.parentNode;
+    if (target.nodeType === COMMENT_NODE && typeof value === "string") {
+      const newNode = document.createTextNode(value);
+      parent.replaceChild(newNode, target);
+      part.target = newNode;
+    } else if (
+      target.nodeType === TEXT_NODE &&
+      typeof value === "string" &&
+      target.nodeValue !== value
+    ) {
+      target.nodeValue = value;
+    } else if (value.nodeType === ELEMENT_NODE && target !== value) {
+      parent.replaceChild(value, target);
+      part.target = value;
+    } else if (value.fragment && value.fragment.nodeName === "TEMPLATE") {
+      // TODO: need to maintain a reference to nodes from nested template added to dom...
+      //render(value, target);
+      //parent.replaceChild(value.fragment.content, target);
+    } else if (Array.isArray(value)) {
+      // TODO: handle rendering arrays into template... 
+    } else if (value.then) {
+      value.then(promised => {
+        set(part, promised);
+      });
+    }
+  }
+}
+
 function TemplateResult(template, exprs) {
   const parts = [];
-  const disposers = [];
-  const fragment = document.importNode(template, true);
-  [].forEach.call(fragment.content.children, child =>
-    walkDOM(fragment.content, child, generateParts(exprs, parts))
-  );
-  const update = () =>
-    parts.forEach(part =>
-      disposers.push(
-        autorun(() => {
-          const target = part.target;
-          const expr = part.expression;
-          if (Array.isArray(target)) {
-            const element = target[0];
-            const name = target[1];
-            try {
-              element[name] = expr == null ? "" : expr;
-            } catch (_) {} // eslint-disable-line
-            if (typeof expr !== "function") {
-              if (expr == null || expr === false) {
-                element.removeAttribute(name);
-              } else {
-                element.setAttribute(name, expr);
-              }
-            }
-          } else {
-            const value = typeof expr === "function" ? expr() : expr;
-            const parent = target.parentNode;
-            if (target.nodeType === COMMENT_NODE && typeof value === "string") {
-              const newNode = document.createTextNode(value);
-              parent.replaceChild(newNode, target);
-              part.target = newNode;
-            } else if (
-              target.nodeType === TEXT_NODE &&
-              typeof value === "string" &&
-              target.nodeValue !== value
-            ) {
-              target.nodeValue = value;
-            } else if (value.nodeType === ELEMENT_NODE && target !== value) {
-              parent.replaceChild(value, target);
-              part.target = value;
-            } else if (
-              value.fragment &&
-              value.fragment.nodeName === "TEMPLATE"
-            ) {
-              // TODO: need to maintain a reference to nodes from nested template added to dom...
-              parent.replaceChild(value.fragment.content, target);
-            }
-          }
-        })
-      )
-    );
-  update(); // trigger initial update before returning from TemplateResult
-  return {
-    fragment,
-    update,
-    dispose: () => disposers.forEach(disposer => disposer())
+  const result = {};
+  let initialized = false;
+  result.values = exprs;
+  result.update = values => {
+    values = values || exprs;
+    if (!initialized) {
+      result.fragment = document.importNode(template, true);
+      [].forEach.call(result.fragment.content.children, child => {
+        const cloneExprs = exprs.slice(0);
+        walkDOM(
+          result.fragment.content,
+          child,
+          generateParts(cloneExprs, parts)
+        )
+      });
+      initialized = true;
+    } else {
+      if (values.length === parts.length) {
+        parts.forEach((part, i) => {
+          part.expression = values[i];
+        });
+      } else {
+        throw new RangeError(
+          "length of values did not match template parts length"
+        );
+      }
+    }
+    parts.forEach(part => {
+      const target = part.target;
+      const expression = part.expression;
+      if (
+        typeof expression === "function" &&
+        ((Array.isArray(target) && !target[1].startsWith("on")) ||
+          !Array.isArray(target))
+      ) {
+        expression(value => set(part, value));
+      } else {
+        set(part, expression);
+      }
+    });
   };
+  return result;
 }
 
 function hex(buffer) {
@@ -162,19 +189,24 @@ export async function html(strs, ...exprs) {
   return TemplateResult(template, exprs);
 }
 
-/* our tagged tempalte literal now returns a promise that resolves to { fragment, update(), dispose() }
-export function render(template, target = document.body) {
-  // clear render target for inserting fragment...
+export function render(template, target = document.body, hydrate = false) {
+  let instance = target.__template;
+  if (instance !== undefined) {
+    instance.update(template.values);
+    return;
+  }
+  instance = target.__template = template;
+  instance.update(template.values);
+
   if (target.children.length > 0) {
-    let i = target.children.length;
-    while (i > 0) {
-      target.removeChild(target.lastChild);
-      i--;
+    if (hydrate) {
+      // TODO: add logic to hydrate existing dom...
+      return;
+    } else {
+      while (target.hasChildNodes) {
+        target.removeChild(target.lastChild);
+      }
     }
   }
-  // trigger update of fragment
-  template.update();
-  target.appendChild(template);
-  return template; // so external code can trigger dispose()
+  target.appendChild(instance.fragment.content);
 }
-*/

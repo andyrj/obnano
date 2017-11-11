@@ -6,6 +6,14 @@
 
 Tagged Template Literal render engine for post-js.  Inspired by lit-html/hyperHTML.
 
+TODO:
+1. Fix failing tests from most recent changes... 
+2. Render arrays passed as expression to template
+3. Finish Render(), use on nested templates...
+4. Write helpers for repeat() and until()
+5. Add logic to hydrate from SSR
+6. get test coverage up to 100/100
+
 ```jsx
 // example code will go here...
 ```
