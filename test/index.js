@@ -31,7 +31,6 @@ test("tagged template literal should handle dynamic template with string child",
 
 test("tagged template literal should handle nested template", async t => {
   const nested = await html`<div id="test">test</div>`;
-  nested.update();
   const template = await html`<div>${nested}</div>`;
   template.update();
   t.is(template.fragment.content.firstChild.firstChild.id, "test");
@@ -58,11 +57,11 @@ test("tagged template literal should handle dynamic nodes dispersed in static no
   t.is(template.fragment.content.firstChild.innerHTML, "This is static, this is dynamic");
 
   const template1 = await html`<div>${str} is at start`;
-  template.update();
+  template1.update();
   t.is(template1.fragment.content.firstChild.innerHTML, "dynamic is at start");
 
   const template2 = await html`<div>in the middle it's ${str}!`;
-  template.update();
+  template2.update();
   t.is(template2.fragment.content.firstChild.innerHTML, "in the middle it's dynamic!");
 })
 

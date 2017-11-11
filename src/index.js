@@ -144,6 +144,8 @@ function TemplateResult(template, exprs) {
         ((Array.isArray(target) && !target[1].startsWith("on")) ||
           !Array.isArray(target))
       ) {
+        // unlike lit-html we pass a function to user space for updating value sort of like hyperapp
+        // does with async actions...
         expression(value => {
           result.values[index] = value;
           set(part, value);
