@@ -124,20 +124,45 @@ function TemplateResult(template, exprs) {
   };
 }
 
-export function html(strs, ...exprs) {
+function hex(buffer) {
+  const hexCodes = [];
+  const padding = "00000000";
+  const view = new DataView(buffer);
+  for (var i = 0; i < view.byteLength; i += 4) {
+    hexCodes.push(
+      (padding + view.getUint32(i).toString(16)).slice(-padding.length)
+    );
+  }
+  return hexCodes.join("");
+}
+
+const sha256 = str => {
+  const utf8er = new window.TextEncoder("utf-8");
+  return window.crypto.subtle
+    .digest("SHA-256", utf8er.encode(str))
+    .then(hash => {
+      return hex(hash);
+    });
+};
+
+export async function html(strs, ...exprs) {
   const html = strs.join("{{}}");
-  let template = templateCache.get(strs);
-  if (!template) {
+  const hash = await sha256(html);
+  const templateId = `templ-${hash}`;
+  let template =
+    templateCache.get(templateId) || document.querySelector(`#${templateId}`);
+  if (template == null) {
     template = document.createElement("template");
     template.innerHTML = html;
     [].forEach.call(template.content.children, child => {
       walkDOM(template.content, child, placeHolderComments);
     });
-    templateCache.set(strs, template);
+    templateCache.set(templateId, template);
   }
   return TemplateResult(template, exprs);
 }
 
+/* our tagged tempalte literal now returns a promise that resolves to { fragment, update(), dispose() }
 export function render(template, target = document.body) {
   // clear render target for inserting fragment...
   if (target.children.length > 0) {
@@ -152,3 +177,4 @@ export function render(template, target = document.body) {
   target.appendChild(template);
   return template; // so external code can trigger dispose()
 }
+*/

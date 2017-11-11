@@ -24,7 +24,9 @@
     "Element": true,
     "HTMLElement": true,
     "requestAnimationFrame": true,
-    "TextEncoder": true
+    "TextEncoder": true,
+    "TextDecoder": true,
+    "crypto": true
   },
   "rules": {
     "prettier/prettier": "error",
