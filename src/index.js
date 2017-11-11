@@ -111,11 +111,13 @@ function TemplateResult(template, exprs) {
   let initialized = false;
   result.values = exprs;
   result.update = values => {
-    values = values || exprs;
+    if (values) {
+      result.values = values;
+    }
     if (!initialized) {
       result.fragment = document.importNode(template, true);
       [].forEach.call(result.fragment.content.children, child => {
-        const cloneExprs = exprs.slice(0);
+        const cloneExprs = result.values.slice(0);
         walkDOM(
           result.fragment.content,
           child,
@@ -124,9 +126,9 @@ function TemplateResult(template, exprs) {
       });
       initialized = true;
     } else {
-      if (values.length === parts.length) {
+      if (result.values.length === parts.length) {
         parts.forEach((part, i) => {
-          part.expression = values[i];
+          part.expression = result.values[i];
         });
       } else {
         throw new RangeError(
@@ -134,7 +136,7 @@ function TemplateResult(template, exprs) {
         );
       }
     }
-    parts.forEach(part => {
+    parts.forEach((part, index) => {
       const target = part.target;
       const expression = part.expression;
       if (
@@ -142,7 +144,10 @@ function TemplateResult(template, exprs) {
         ((Array.isArray(target) && !target[1].startsWith("on")) ||
           !Array.isArray(target))
       ) {
-        expression(value => set(part, value));
+        expression(value => {
+          result.values[index] = value;
+          set(part, value);
+        });
       } else {
         set(part, expression);
       }
