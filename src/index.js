@@ -61,7 +61,7 @@ function generateParts(exprs, parts) {
   };
 }
 
-function set(part, value) {
+function set(part, value, renderer) {
   const target = part.target;
   if (Array.isArray(target)) {
     const element = target[0];
@@ -93,13 +93,14 @@ function set(part, value) {
       part.target = value;
     } else if (value.fragment && value.fragment.nodeName === "TEMPLATE") {
       // TODO: need to maintain a reference to nodes from nested template added to dom...
-      //render(value, target);
+      console.log("got here...");
+      renderer(value, target.parentNode, target);
       //parent.replaceChild(value.fragment.content, target);
     } else if (Array.isArray(value)) {
       // TODO: handle rendering arrays into template... 
     } else if (value.then) {
       value.then(promised => {
-        set(part, promised);
+        set(part, promised, renderer);
       });
     }
   }
@@ -110,7 +111,7 @@ function TemplateResult(template, exprs) {
   const result = {};
   let initialized = false;
   result.values = exprs;
-  result.update = values => {
+  result.update = (values, renderer) => {
     if (values) {
       result.values = values;
     }
@@ -145,77 +146,60 @@ function TemplateResult(template, exprs) {
           !Array.isArray(target))
       ) {
         // unlike lit-html we pass a function to user space for updating value sort of like hyperapp
-        // does with async actions...
-        expression(value => {
-          result.values[index] = value;
-          set(part, value);
+        // does with async actions... update => {}
+        expression(newValue => {
+          result.values[index] = newValue;
+          set(part, newValue, renderer);
         });
       } else {
-        set(part, expression);
+        set(part, expression, renderer);
       }
     });
   };
   return result;
 }
 
-function hex(buffer) {
-  const hexCodes = [];
-  const padding = "00000000";
-  const view = new DataView(buffer);
-  for (var i = 0; i < view.byteLength; i += 4) {
-    hexCodes.push(
-      (padding + view.getUint32(i).toString(16)).slice(-padding.length)
-    );
-  }
-  return hexCodes.join("");
-}
-
-const sha256 = str => {
-  const utf8er = new window.TextEncoder("utf-8");
-  return window.crypto.subtle
-    .digest("SHA-256", utf8er.encode(str))
-    .then(hash => {
-      return hex(hash);
-    });
-};
-
-export async function html(strs, ...exprs) {
+export function html(strs, ...exprs) {
   const html = strs.join("{{}}");
-  const hash = await sha256(html);
-  const templateId = `templ-${hash}`;
-  let template =
-    templateCache.get(templateId) || document.querySelector(`#${templateId}`);
+  let template = templateCache.get(strs);
   if (template == null) {
     template = document.createElement("template");
     template.innerHTML = html;
     [].forEach.call(template.content.children, child => {
       walkDOM(template.content, child, placeHolderComments);
     });
-    templateCache.set(templateId, template);
+    templateCache.set(strs, template);
   }
   return TemplateResult(template, exprs);
 }
 
-export function render(template, target = document.body, hydrate = false) {
-  let instance = target.__template;
+export function render(
+  template,
+  parent = document.body,
+  target = null,
+  hydrate = false
+) {
+  let instance = parent.__template;
   if (instance !== undefined) {
-    instance.update(template.values);
+    instance.update(template.values, render);
     return;
   }
-  instance = target.__template = template;
-  instance.update(template.values);
+  instance = parent.__template = template;
+  instance.update(template.values, render);
 
   // TODO: update logic below so that when render is called from nested template in set() above
   // if target is a comment node it should replaceChild(instance.fragment.content) instead of append...
-  if (target.children.length > 0) {
+  if (target.nodeType === COMMENT_NODE) {
+    parent.replaceChild(instance.fragment.content, target);
+  } else if (parent.children.length > 0) {
     if (hydrate) {
       // TODO: add logic to hydrate existing dom...
       return;
     } else {
-      while (target.hasChildNodes) {
-        target.removeChild(target.lastChild);
+      while (parent.hasChildNodes) {
+        parent.removeChild(parent.lastChild);
       }
     }
+    parent.appendChild(instance.fragment.content);
   }
-  target.appendChild(instance.fragment.content);
 }
