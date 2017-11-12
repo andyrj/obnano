@@ -1,6 +1,6 @@
 import test from "ava";
 import { JSDOM } from "jsdom";
-import { html } from "../src";
+import { html, render } from "../src";
 import { TextEncoder, TextDecoder } from "text-encoding";
 import WebCrypto from "node-webcrypto-ossl";
 
@@ -14,14 +14,14 @@ test.beforeEach(t => {
   global.window.crypto = new WebCrypto();
 });
 
-test("tagged template literal should handle static templates", async t => {
+test("tagged template literal should handle static templates", t => {
   const template = html`<div id="test">test</div>`;
   template.update();
   t.is(template.fragment.content.firstChild.id, "test");
   t.is(template.fragment.content.firstChild.firstChild.nodeValue, "test");
 });
 
-test("tagged template literal should handle dynamic template with string child", async t => {
+test("tagged template literal should handle dynamic template with string child", t => {
   const str = "test";
   const template = html`<div id="test">${str}</div>`;
   template.update();
@@ -29,7 +29,8 @@ test("tagged template literal should handle dynamic template with string child",
   t.is(template.fragment.content.firstChild.firstChild.nodeValue, str);
 });
 
-test("tagged template literal should handle nested template", async t => {
+test("tagged template literal should handle nested template", t => {
+  console.log("+++++");
   const nested = html`<div id="test">test</div>`;
   const template = html`<div>${nested}</div>`;
   template.update();
@@ -40,9 +41,10 @@ test("tagged template literal should handle nested template", async t => {
   template1.update();
   t.is(template1.fragment.content.firstChild.firstChild.id, "test");
   t.is(template1.fragment.content.firstChild.firstChild.firstChild.nodeValue, "test");
+  console.log("-----");
 });
 
-test("tagged template literal should handle dom nodes", async t => {
+test("tagged template literal should handle dom nodes", t => {
   const node = document.createElement("div");
   node.id = "test";
   const template = html`<div>${node}</div>`;
@@ -50,7 +52,7 @@ test("tagged template literal should handle dom nodes", async t => {
   t.is(template.fragment.content.firstChild.firstChild.id, "test");
 });
 
-test("tagged template literal should handle dynamic nodes dispersed in static nodes", async t => {
+test("tagged template literal should handle dynamic nodes dispersed in static nodes", t => {
   const str = "dynamic";
   const template = html`<div>This is static, this is ${str}</div>`;
   template.update();
@@ -65,14 +67,14 @@ test("tagged template literal should handle dynamic nodes dispersed in static no
   t.is(template2.fragment.content.firstChild.innerHTML, "in the middle it's dynamic!");
 })
 
-test("tagged template literal should handle dynamic attributes", async t => {
+test("tagged template literal should handle dynamic attributes", t => {
   const str = "test";
   const template = html`<div id=${str}>test</div>`;
   template.update();
   t.is(template.fragment.content.firstChild.id, str);
 });
 
-test("tagged template literal should handle dynamic child interspersed with static nodes", async t => {
+test("tagged template literal should handle dynamic child interspersed with static nodes", t => {
   const node = document.createElement("div");
   node.innerHTML = "test";
   const template = html`<div><br>before${node}<br>after</div>`;

@@ -47,60 +47,83 @@ function generateParts(exprs, parts) {
           if (attr.nodeValue === "{{}}") {
             parts.push({
               target: [element, attr.nodeName],
-              expression: exprs.shift()
+              expression: exprs.shift(),
+              end: null
             });
           }
         });
       } else if (nodeType === COMMENT_NODE && nodeValue === "{{}}") {
         parts.push({
           target: element,
-          expression: exprs.shift()
+          expression: exprs.shift(),
+          end: element
         });
       }
     }
   };
 }
 
-function set(part, value, renderer) {
+function updateAttribute(element, name, value) {
+  try {
+    element[name] = value == null ? "" : value;
+  } catch (_) {} // eslint-disable-line
+  if (typeof expr !== "function") {
+    if (value == null) {
+      element.removeAttribute(name);
+    } else {
+      element.setAttribute(name, value);
+    }
+  }
+}
+
+function updateTextNode(part, value) {
+  const element = part.target;
+  const parent = element.parentNode;
+  if (element.nodeType === COMMENT_NODE && typeof value === "string") {
+    const newNode = document.createTextNode(value);
+    parent.replaceChild(newNode, element);
+    part.target = part.end = newNode;
+  } else if (element.nodeType === TEXT_NODE && element.nodeValue !== value) {
+    element.nodeValue = value;
+  }
+}
+
+function updateNode(part, value) {
+  const element = part.target;
+  const parent = element.parentNode;
+  parent.replaceChild(value, element);
+  part.target = part.end = value;
+}
+
+function updateArray(part, value) {
+  // TODO: add logic for rendering arrays...
+}
+
+function updateTemplate(part, template) {
+  const target = part.target;
+  part.target = template.fragment.content.firstChild;
+  part.end = template.fragment.content.lastChild;
+  render(template, target.parentNode, target);
+}
+
+function set(part, value) {
   const target = part.target;
   if (Array.isArray(target)) {
     const element = target[0];
     const name = target[1];
-    try {
-      element[name] = value == null ? "" : value;
-    } catch (_) {} // eslint-disable-line
-    if (typeof expr !== "function") {
-      if (value == null) {
-        element.removeAttribute(name);
-      } else {
-        element.setAttribute(name, value);
-      }
-    }
+    updateAttribute(element, name, value);
   } else {
-    const parent = target.parentNode;
-    if (target.nodeType === COMMENT_NODE && typeof value === "string") {
-      const newNode = document.createTextNode(value);
-      parent.replaceChild(newNode, target);
-      part.target = newNode;
-    } else if (
-      target.nodeType === TEXT_NODE &&
-      typeof value === "string" &&
-      target.nodeValue !== value
-    ) {
-      target.nodeValue = value;
+    if (typeof value === "string") {
+      updateTextNode(part, value);
     } else if (value.nodeType === ELEMENT_NODE && target !== value) {
-      parent.replaceChild(value, target);
-      part.target = value;
+      updateNode(part, value);
     } else if (value.fragment && value.fragment.nodeName === "TEMPLATE") {
-      // TODO: need to maintain a reference to nodes from nested template added to dom...
-      console.log("got here...");
-      renderer(value, target.parentNode, target);
-      //parent.replaceChild(value.fragment.content, target);
+      updateTemplate(part, value);
     } else if (Array.isArray(value)) {
-      // TODO: handle rendering arrays into template... 
+      updateArray(part, value);
     } else if (value.then) {
       value.then(promised => {
-        set(part, promised, renderer);
+        set(part, promised);
       });
     }
   }
@@ -111,7 +134,7 @@ function TemplateResult(template, exprs) {
   const result = {};
   let initialized = false;
   result.values = exprs;
-  result.update = (values, renderer) => {
+  result.update = values => {
     if (values) {
       result.values = values;
     }
@@ -149,10 +172,10 @@ function TemplateResult(template, exprs) {
         // does with async actions... update => {}
         expression(newValue => {
           result.values[index] = newValue;
-          set(part, newValue, renderer);
+          set(part, newValue);
         });
       } else {
-        set(part, expression, renderer);
+        set(part, expression);
       }
     });
   };
