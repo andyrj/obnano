@@ -48,7 +48,10 @@ function generateParts(exprs, parts) {
             parts.push({
               target: [element, attr.nodeName],
               expression: exprs.shift(),
-              end: null
+              end: null /*, // TODO: part update function needs to be able to access identifier for this part... maybe pass symbol?
+              update(newValue) {
+                set(this, newValue);
+              }*/
             });
           }
         });
@@ -56,7 +59,10 @@ function generateParts(exprs, parts) {
         parts.push({
           target: element,
           expression: exprs.shift(),
-          end: element
+          end: element /*,
+          update(newValue) {
+            set(this, newValue);
+          }*/
         });
       }
     }
@@ -99,13 +105,6 @@ function updateArray(part, value) {
   // TODO: add logic for rendering arrays...
 }
 
-function updateTemplate(part, template) {
-  const target = part.target;
-  part.target = template.fragment.content.firstChild;
-  part.end = template.fragment.content.lastChild;
-  render(template, target.parentNode, target);
-}
-
 function set(part, value) {
   const target = part.target;
   if (Array.isArray(target)) {
@@ -117,8 +116,8 @@ function set(part, value) {
       updateTextNode(part, value);
     } else if (value.nodeType === ELEMENT_NODE && target !== value) {
       updateNode(part, value);
-    } else if (value.fragment && value.fragment.nodeName === "TEMPLATE") {
-      updateTemplate(part, value);
+    } else if (value.values && value.update) {
+      render(value, target, part);
     } else if (Array.isArray(value)) {
       updateArray(part, value);
     } else if (value.then) {
@@ -152,6 +151,7 @@ function TemplateResult(template, exprs) {
     } else {
       if (result.values.length === parts.length) {
         parts.forEach((part, i) => {
+          // TODO: should we skip replacing nested templates and part functions?
           part.expression = result.values[i];
         });
       } else {
@@ -168,9 +168,10 @@ function TemplateResult(template, exprs) {
         ((Array.isArray(target) && !target[1].startsWith("on")) ||
           !Array.isArray(target))
       ) {
-        // unlike lit-html we pass a function to user space for updating value sort of like hyperapp
-        // does with async actions... update => {}
+        // TODO: think about this, I think we should simplify by just passing part into function...
+        // and add an update(newValue) function to the part api itself...
         expression(newValue => {
+          // TODO: replacing the value is going to be problematic for nestedTemplates and update functions...
           result.values[index] = newValue;
           set(part, newValue);
         });
@@ -196,33 +197,27 @@ export function html(strs, ...exprs) {
   return TemplateResult(template, exprs);
 }
 
-export function render(
-  template,
-  parent = document.body,
-  target = null,
-  hydrate = false
-) {
-  let instance = parent.__template;
-  if (instance !== undefined) {
-    instance.update(template.values, render);
+export function render(template, target = null, part = null) {
+  const parent = target != null ? target.parent : document.body;
+  let instance =
+    target.__template ||
+    (parent.childNodes.length > 0 && parent.childNodes[0].__template)
+      ? parent.childNodes[0].__template
+      : null;
+  if (instance) {
+    instance.update(template.values);
     return;
   }
-  instance = parent.__template = template;
-  instance.update(template.values, render);
-
-  // TODO: update logic below so that when render is called from nested template in set() above
-  // if target is a comment node it should replaceChild(instance.fragment.content) instead of append...
-  if (target.nodeType === COMMENT_NODE) {
-    parent.replaceChild(instance.fragment.content, target);
-  } else if (parent.children.length > 0) {
-    if (hydrate) {
-      // TODO: add logic to hydrate existing dom...
-      return;
-    } else {
+  if (target == null) {
+    template.update();
+    if (parent.childNodes.length > 0) {
       while (parent.hasChildNodes) {
         parent.removeChild(parent.lastChild);
       }
     }
-    parent.appendChild(instance.fragment.content);
+    parent.appendChild(template.fragment.content);
+    parent.childNodes[0].__template = template;
+  } else if (target.nodeType === COMMENT_NODE && target === part.end) {
+    // initializing a nested template
   }
 }
