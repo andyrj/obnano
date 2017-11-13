@@ -74,3 +74,14 @@ test("tagged template literal should handle nested template", t => {
   t.is(template1.fragment.content.firstChild.firstChild.id, "test");
   t.is(template1.fragment.content.firstChild.firstChild.firstChild.nodeValue, "test");
 });
+
+test("tagged template literal should allow an expression which changes types between renders", t => {
+  const str = "test";
+  const div = document.createElement("div");
+  div.id = "test";
+  const template = html`<div>${str}</div>`;
+  template.update();
+  t.is(template.fragment.content.firstChild.firstChild.nodeValue, "test");
+  template.update([div]);
+  t.is(template.fragment.content.firstChild.firstChild.id, "test");
+});

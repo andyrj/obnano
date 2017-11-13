@@ -219,7 +219,6 @@ export function render(template, target = null, part = null) {
     parent.appendChild(template.fragment.content);
     parent.childNodes[0].__template = template;
   } else if (target.nodeType === COMMENT_NODE && target === part.end) {
-    console.log(parent, template, part);
     template.update();
     template.fragment.content.__template = template;
     part.target = template.fragment.content.firstChild;
