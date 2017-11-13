@@ -61,3 +61,16 @@ test("tagged template literal should handle dynamic child interspersed with stat
   template.update();
   t.is(template.fragment.content.firstChild.outerHTML, "<div><br>before<div>test</div><br>after</div>");
 });
+
+test("tagged template literal should handle nested template", t => {
+  const nested = html`<div id="test">test</div>`;
+  const template = html`<div>${nested}</div>`;
+  template.update();
+  t.is(template.fragment.content.firstChild.firstChild.id, "test");
+  t.is(template.fragment.content.firstChild.firstChild.firstChild.nodeValue, "test");
+
+  const template1 = html`<div>${html`<div id="test">test</div>`}</div>`;
+  template1.update();
+  t.is(template1.fragment.content.firstChild.firstChild.id, "test");
+  t.is(template1.fragment.content.firstChild.firstChild.firstChild.nodeValue, "test");
+});
