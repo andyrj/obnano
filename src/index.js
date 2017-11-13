@@ -48,10 +48,7 @@ function generateParts(exprs, parts) {
             parts.push({
               target: [element, attr.nodeName],
               expression: exprs.shift(),
-              end: null /*, // TODO: part update function needs to be able to access identifier for this part... maybe pass symbol?
-              update(newValue) {
-                set(this, newValue);
-              }*/
+              end: null
             });
           }
         });
@@ -59,10 +56,7 @@ function generateParts(exprs, parts) {
         parts.push({
           target: element,
           expression: exprs.shift(),
-          end: element /*,
-          update(newValue) {
-            set(this, newValue);
-          }*/
+          end: element
         });
       }
     }
@@ -128,6 +122,14 @@ function set(part, value) {
   }
 }
 
+function isDirective(target, expression) {
+  return (
+    typeof expression === "function" &&
+    ((Array.isArray(target) && !target[1].startsWith("on")) ||
+      !Array.isArray(target))
+  );
+}
+
 function TemplateResult(template, exprs) {
   const parts = [];
   const result = {};
@@ -151,8 +153,12 @@ function TemplateResult(template, exprs) {
     } else {
       if (result.values.length === parts.length) {
         parts.forEach((part, i) => {
-          // TODO: should we skip replacing nested templates and part functions?
-          part.expression = result.values[i];
+          if (
+            !isDirective(part.target, part.expression) &&
+            !part.target.__template
+          ) {
+            part.expression = result.values[i];
+          }
         });
       } else {
         throw new RangeError(
@@ -160,19 +166,11 @@ function TemplateResult(template, exprs) {
         );
       }
     }
-    parts.forEach((part, index) => {
+    parts.forEach(part => {
       const target = part.target;
       const expression = part.expression;
-      if (
-        typeof expression === "function" &&
-        ((Array.isArray(target) && !target[1].startsWith("on")) ||
-          !Array.isArray(target))
-      ) {
-        // TODO: think about this, I think we should simplify by just passing part into function...
-        // and add an update(newValue) function to the part api itself...
+      if (isDirective(target, expression)) {
         expression(newValue => {
-          // TODO: replacing the value is going to be problematic for nestedTemplates and update functions...
-          result.values[index] = newValue;
           set(part, newValue);
         });
       } else {
@@ -198,10 +196,13 @@ export function html(strs, ...exprs) {
 }
 
 export function render(template, target = null, part = null) {
-  const parent = target != null ? target.parent : document.body;
+  const parent = target != null ? target.parentNode : document.body;
   let instance =
     target.__template ||
-    (parent.childNodes.length > 0 && parent.childNodes[0].__template)
+    (parent &&
+      parent.childNodes &&
+      parent.childNodes.length > 0 &&
+      parent.childNodes[0].__template)
       ? parent.childNodes[0].__template
       : null;
   if (instance) {
@@ -218,6 +219,11 @@ export function render(template, target = null, part = null) {
     parent.appendChild(template.fragment.content);
     parent.childNodes[0].__template = template;
   } else if (target.nodeType === COMMENT_NODE && target === part.end) {
-    // initializing a nested template
+    console.log(parent, template, part);
+    template.update();
+    template.fragment.content.__template = template;
+    part.target = template.fragment.content.firstChild;
+    part.end = template.fragment.content.lastChild;
+    parent.replaceChild(template.fragment.content, target);
   }
 }
