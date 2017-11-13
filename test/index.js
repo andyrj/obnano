@@ -85,3 +85,13 @@ test("tagged template literal should allow an expression which changes types bet
   template.update([div]);
   t.is(template.fragment.content.firstChild.firstChild.id, "test");
 });
+
+test("tagged template literal directives should work", t => {
+  let lastUpdate;
+  const template = html`<div>${(update) => {lastUpdate = update}}</div>`;
+  template.update();
+  lastUpdate("test");
+  t.is(template.fragment.content.firstChild.firstChild.nodeValue, "test");
+  lastUpdate("test123");
+  t.is(template.fragment.content.firstChild.firstChild.nodeValue, "test123");
+});
