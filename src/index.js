@@ -13,6 +13,7 @@ export {
 } from "post-js";
 
 const disposers = new Map();
+// TODO: think about how this will be disposed of when ulit part is disposed...  need to add onDispose() to directive api?
 export function ob(thunk) {
   return function(update, id) {
     if (!disposers.has(id)) {
