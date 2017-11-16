@@ -12,6 +12,18 @@ export {
   action
 } from "post-js";
 
+const disposers = new Map();
+export function ob(thunk) {
+  return function(update, id) {
+    if (!disposers.has(id)) {
+      const dispose = autorun(() => {
+        update(thunk());
+      });
+      disposers.set(id, dispose);
+    }
+  };
+}
+
 export function app(store, view, target = document.body) {
   autorun(() => requestAnimationFrame(() => render(view(store), target)));
   return store;

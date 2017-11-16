@@ -6,8 +6,35 @@
 
 obnano = tagged template literal view (lit-html like library) + proxied observable state tree (mobx-state-tree like library) + html5 pushState router
 
+npm install --save obnano
+
 ```jsx
-// example code will go here...
+import { app, Store, autorun, html, ob } from "obnano";
+
+const header = html`<div>Header markup here...</div>`;
+const footer = html`<div>Footer markup here...</div>`;
+
+const layout = store => html`
+  ${header}
+  <div>
+    ${ob(() => store.count)}
+  </div>
+  <div>
+    <button onclick=${store.increment} />
+  </div>
+  ${footer}
+`;
+
+app(Store(
+  { 
+    count: 0
+  }, 
+  { 
+    increment(ctx) {
+      ctx.count += 1;
+    }
+  }
+), layout);
 ```
 
 ## License
