@@ -63,12 +63,18 @@
     "eslint-plugin-standard": "^3.0.1",
     "ink-docstrap": "^1.3.0",
     "jsdoc": "^3.5.5",
+    "jsdom": "^11.3.0",
     "nyc": "^11.2.1",
+    "post-js": "^0.3.0",
     "prettier": "^1.6.1",
     "rollup": "^0.50.0",
     "rollup-plugin-babel": "^3.0.2",
     "rollup-plugin-babel-minify": "^3.1.2",
-    "undom": "^0.3.3"
+    "ulit": "0.0.2"
+  },
+  "peerDependencies": {
+    "post-js": "^0.3.0",
+    "ulit": "0.0.2"
   },
   "ava": {
     "require": [
